@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ECG Front — Panel de gestión CONTEC E3
 
-## Getting Started
+Frontend del sistema de gestión del electrocardiógrafo CONTEC E3. Permite detectar y sincronizar el dispositivo desde el navegador.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** + **TypeScript**
+- **Tailwind CSS v4**
+- **recharts** — gráficos ECG
+- **lucide-react** — iconos
+- Docker multi-stage (producción + desarrollo)
+
+## Requisitos
+
+- Node.js 20+
+- Backend [`Electrocardiograph_device`](https://github.com/JOSRANDOM/Electrocardiograph_device) corriendo en `http://localhost:8000`
+
+## Desarrollo local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env   # configurar variables
+npm install
+npm run dev            # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Variables de entorno
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | URL del backend API | `http://localhost:8000` |
+| `NEXT_PUBLIC_AGENT_DOWNLOAD_URL` | URL de descarga del agente .exe | `{API_URL}/agent/download` |
+| `APP_PORT` | Puerto del contenedor Docker | `3000` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Docker
 
-## Learn More
+```bash
+make build && make up          # producción → http://localhost:3000
+make build-dev && make up-dev  # desarrollo con hot-reload
+make down                      # detener
+make logs                      # ver logs
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Flujo de sincronización
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. El usuario presiona **Sincronizar dispositivo**
+2. Se valida que el sistema operativo sea Windows
+3. Si es la primera vez, se descarga `agente_contec.exe` automáticamente
+4. El usuario ejecuta el agente y conecta el electrocardiógrafo por USB
+5. El indicador LED cambia a **verde** cuando el dispositivo es detectado
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| LED | Estado |
+|-----|--------|
+| 🟡 Amarillo | Buscando / descargando |
+| 🟢 Verde | Dispositivo sincronizado |
+| 🔴 Rojo | Error o SO no compatible |
 
-## Deploy on Vercel
+## Estructura
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+├── components/
+│   └── DeviceCard.tsx   # Card principal con LED y lógica de sincronización
+├── layout.tsx
+└── page.tsx
+```
