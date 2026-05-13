@@ -1,6 +1,6 @@
 # ECG Front — Panel de gestión CONTEC E3
 
-Frontend del sistema de gestión del electrocardiógrafo CONTEC E3. Permite detectar y sincronizar el dispositivo desde el navegador.
+Frontend del sistema de gestión del electrocardiógrafo CONTEC E3. Permite detectar y sincronizar el dispositivo desde el navegador con un solo clic.
 
 ## Stack
 
@@ -13,12 +13,12 @@ Frontend del sistema de gestión del electrocardiógrafo CONTEC E3. Permite dete
 ## Requisitos
 
 - Node.js 20+
-- Backend [`Electrocardiograph_device`](https://github.com/JOSRANDOM/Electrocardiograph_device) corriendo en `http://localhost:8000`
+- Backend [`Electrocardiograph_device`](https://github.com/JOSRANDOM/Electrocardiograph_device) corriendo en Windows
 
 ## Desarrollo local
 
 ```bash
-cp .env.example .env   # configurar variables
+cp .env.example .env   # configurar NEXT_PUBLIC_API_URL
 npm install
 npm run dev            # http://localhost:3000
 ```
@@ -28,7 +28,6 @@ npm run dev            # http://localhost:3000
 | Variable | Descripción | Default |
 |----------|-------------|---------|
 | `NEXT_PUBLIC_API_URL` | URL del backend API | `http://localhost:8000` |
-| `NEXT_PUBLIC_AGENT_DOWNLOAD_URL` | URL de descarga del agente .exe | `{API_URL}/agent/download` |
 | `APP_PORT` | Puerto del contenedor Docker | `3000` |
 
 ## Docker
@@ -42,24 +41,17 @@ make logs                      # ver logs
 
 ## Flujo de sincronización
 
-1. El usuario presiona **Sincronizar dispositivo**
-2. Se valida que el sistema operativo sea Windows
-3. Si es la primera vez, se descarga `agente_contec.exe` automáticamente
-4. El usuario ejecuta el agente y conecta el electrocardiógrafo por USB
-5. El indicador LED cambia a **verde** cuando el dispositivo es detectado
+1. Al cargar la página, el frontend consulta `GET /agent/info` — si el `.exe` no está disponible el botón se deshabilita
+2. El usuario presiona **Sincronizar dispositivo**
+3. El navegador descarga `agente_contec.exe` vía `GET /agent/download`
+4. El usuario ejecuta el agente en su PC Windows con el dispositivo conectado por USB
+5. El frontend hace polling cada 3s a `GET /api/v1/device/status` (timeout: 90s)
+6. El indicador LED cambia a **verde** cuando el dispositivo es detectado
+
+> **Requisito**: `NEXT_PUBLIC_API_URL` debe apuntar al servidor Windows donde corre uvicorn, no a un servidor Linux/cloud.
 
 | LED | Estado |
 |-----|--------|
-| 🟡 Amarillo | Buscando / descargando |
+| 🟡 Amarillo | Esperando que el usuario ejecute el agente |
 | 🟢 Verde | Dispositivo sincronizado |
-| 🔴 Rojo | Error o SO no compatible |
-
-## Estructura
-
-```
-app/
-├── components/
-│   └── DeviceCard.tsx   # Card principal con LED y lógica de sincronización
-├── layout.tsx
-└── page.tsx
-```
+| 🔴 Rojo | Timeout o error de conexión |

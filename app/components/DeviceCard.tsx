@@ -5,13 +5,10 @@ import { useEffect, useRef, useState } from "react";
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
 type Phase =
-  | "idle"        // sin acción
-  | "os_error"    // SO distinto de Windows  → LED rojo
-  | "downloading" // descargando agente      → LED amarillo
-  | "waiting"     // esperando que corra exe → LED amarillo
-  | "polling"     // sondeando la API        → LED amarillo
-  | "connected"   // dispositivo detectado   → LED verde
-  | "error";      // timeout / fallo         → LED rojo
+  | "idle"       // sin acción
+  | "polling"    // sondeando la API    → LED amarillo
+  | "connected"  // dispositivo detectado → LED verde
+  | "error";     // timeout / fallo    → LED rojo
 
 type LedColor = "none" | "yellow" | "green" | "red";
 
@@ -23,49 +20,16 @@ interface DeviceInfo {
 // ── Constantes ───────────────────────────────────────────────────────────────
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const AGENT_DOWNLOAD_URL =
-  process.env.NEXT_PUBLIC_AGENT_DOWNLOAD_URL ?? `${API_URL}/agent/download`;
 
 const POLL_INTERVAL_MS = 3_000;
 const POLL_TIMEOUT_MS  = 90_000;
-const AGENT_KEY        = "ecg_agent_installed";
 
 const LED_COLOR: Record<Phase, LedColor> = {
-  idle:        "none",
-  os_error:    "red",
-  downloading: "yellow",
-  waiting:     "yellow",
-  polling:     "yellow",
-  connected:   "green",
-  error:       "red",
+  idle:      "none",
+  polling:   "yellow",
+  connected: "green",
+  error:     "red",
 };
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function isWindows(): boolean {
-  return typeof navigator !== "undefined" && /windows/i.test(navigator.userAgent);
-}
-
-function agentInstalled(): boolean {
-  return localStorage.getItem(AGENT_KEY) === "true";
-}
-
-function markAgentInstalled() {
-  localStorage.setItem(AGENT_KEY, "true");
-}
-
-function clearAgentInstalled() {
-  localStorage.removeItem(AGENT_KEY);
-}
-
-function triggerDownload(url: string, filename: string) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
 
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
@@ -85,12 +49,9 @@ function StatusRow({ phase }: { phase: Phase }) {
   const color = LED_COLOR[phase];
 
   const text: Partial<Record<Phase, string>> = {
-    os_error:    "Solo compatible con sistemas Windows.",
-    downloading: "Descargando agente...",
-    waiting:     "Abre el agente y conecta el dispositivo.",
-    polling:     "Buscando dispositivo...",
-    connected:   "Dispositivo sincronizado",
-    error:       "No se detectó el dispositivo.",
+    polling:   "Ejecuta el archivo descargado y espera la conexión...",
+    connected: "Dispositivo sincronizado",
+    error:     "No se detectó el dispositivo.",
   };
 
   const textColor: Record<LedColor, string> = {
@@ -107,20 +68,6 @@ function StatusRow({ phase }: { phase: Phase }) {
       <Led color={color} />
       <span className={`text-sm ${textColor[color]}`}>{text[phase]}</span>
     </div>
-  );
-}
-
-function WaitingInstructions() {
-  return (
-    <ol className="mt-1 ml-1 list-decimal list-inside space-y-1 text-xs text-gray-400">
-      <li>
-        Abre{" "}
-        <span className="font-mono font-medium text-gray-600">agente_contec.exe</span>{" "}
-        como administrador.
-      </li>
-      <li>Conecta el electrocardiógrafo por USB.</li>
-      <li>Espera a que el indicador cambie a verde.</li>
-    </ol>
   );
 }
 
@@ -146,15 +93,24 @@ function DeviceDetails({ device }: { device: DeviceInfo }) {
 // ── Componente principal ─────────────────────────────────────────────────────
 
 export default function DeviceCard() {
-  const [phase, setPhase]   = useState<Phase>("idle");
-  const [device, setDevice] = useState<DeviceInfo | null>(null);
-  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [phase, setPhase]           = useState<Phase>("idle");
+  const [device, setDevice]         = useState<DeviceInfo | null>(null);
+  const [errMsg, setErrMsg]         = useState<string | null>(null);
+  const [agentReady, setAgentReady] = useState<boolean | null>(null);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef  = useRef(true);
 
   useEffect(() => {
+    // Resetear en cada ejecución del efecto (necesario para React StrictMode)
+    mountedRef.current = true;
+
+    fetch(`${API_URL}/agent/info`)
+      .then(res => res.json())
+      .then(data => { if (mountedRef.current) setAgentReady(data.disponible === true); })
+      .catch(() => { if (mountedRef.current) setAgentReady(false); });
+
     return () => {
       mountedRef.current = false;
       clearTimers();
@@ -168,7 +124,7 @@ export default function DeviceCard() {
 
   async function pollOnce() {
     try {
-      const res  = await fetch(`${API_URL}/api/v1/device/status`);
+      const res  = await fetch(`${API_URL}/agent/device-status`);
       const data = await res.json();
       if (!mountedRef.current) return;
 
@@ -192,78 +148,37 @@ export default function DeviceCard() {
       if (!mountedRef.current) return;
       clearTimers();
       setPhase("error");
-      setErrMsg("No se detectó el dispositivo. Asegúrate de que el agente esté ejecutándose y el electrocardiógrafo conectado.");
+      setErrMsg("No se detectó el dispositivo. Asegúrate de que el electrocardiógrafo esté conectado por USB.");
     }, POLL_TIMEOUT_MS);
   }
 
-  async function downloadAndSync() {
-    // Verificar que el agente esté disponible en el servidor
-    setPhase("downloading");
-    try {
-      const info = await fetch(`${API_URL}/agent/info`);
-      const data = await info.json();
-      if (!info.ok || !data.disponible) {
-        setPhase("error");
-        setErrMsg("El agente no está disponible en este momento. Contacta al administrador.");
-        return;
-      }
-    } catch {
-      setPhase("error");
-      setErrMsg("No se pudo conectar con el servidor. Verifica tu conexión.");
-      return;
-    }
-
-    // Descargar y marcar como instalado
-    triggerDownload(AGENT_DOWNLOAD_URL, "agente_contec.exe");
-    markAgentInstalled();
-
-    // Mostrar instrucciones y luego iniciar polling
-    setTimeout(() => {
-      if (!mountedRef.current) return;
-      setPhase("waiting");
-      setTimeout(() => {
-        if (!mountedRef.current) return;
-        startPolling();
-      }, 6_000);
-    }, 1_500);
-  }
-
-  async function handleSync() {
+  function handleSync() {
     clearTimers();
     setDevice(null);
     setErrMsg(null);
 
-    // 1. Validar Windows
-    if (!isWindows()) {
-      setPhase("os_error");
-      return;
-    }
+    // Dispara la descarga del ejecutable
+    const link = document.createElement("a");
+    link.href = `${API_URL}/agent/download`;
+    link.download = "agente_contec.exe";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-    // 2. ¿Ya tiene el agente instalado?
-    if (agentInstalled()) {
-      // Ir directo al polling sin descargar
-      startPolling();
-    } else {
-      // Primera vez: descargar el agente
-      await downloadAndSync();
-    }
+    startPolling();
   }
 
-  function handleRedownload() {
-    clearAgentInstalled();
-    setPhase("idle");
-    setErrMsg(null);
-    setDevice(null);
-  }
+  const ledColor  = LED_COLOR[phase];
+  const isBusy    = ledColor === "yellow";
 
-  const ledColor = LED_COLOR[phase];
-  const isBusy   = ledColor === "yellow";
+  const buttonDisabled = isBusy || agentReady !== true;
 
-  const buttonLabel = isBusy
-    ? phase === "downloading" ? "Descargando..." : "Sincronizando..."
-    : phase === "connected"
-    ? "Volver a sincronizar"
-    : "Sincronizar dispositivo";
+  const buttonLabel =
+    agentReady === null  ? "Verificando..." :
+    agentReady === false ? "Agente no disponible" :
+    isBusy               ? "Esperando agente..." :
+    phase === "connected" ? "Volver a sincronizar" :
+                           "Sincronizar dispositivo";
 
   return (
     <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-6 shadow-md">
@@ -282,23 +197,22 @@ export default function DeviceCard() {
       {/* Área de estado */}
       <div className="mb-6 min-h-[88px] space-y-3">
         {phase === "idle" && (
-          <p className="text-sm text-gray-400">Sin dispositivo conectado.</p>
+          agentReady === null ? (
+            <p className="text-sm text-gray-400">Verificando disponibilidad...</p>
+          ) : agentReady === false ? (
+            <p className="text-sm text-red-500">El agente no está disponible. Contacta al administrador.</p>
+          ) : (
+            <p className="text-sm text-gray-400">Sin dispositivo conectado.</p>
+          )
         )}
 
         <StatusRow phase={phase} />
 
-        {phase === "waiting"   && <WaitingInstructions />}
         {phase === "connected" && device && <DeviceDetails device={device} />}
 
         {phase === "error" && errMsg && (
-          <div className="rounded-xl bg-red-50 px-4 py-3 space-y-2">
+          <div className="rounded-xl bg-red-50 px-4 py-3">
             <p className="text-xs text-red-600">{errMsg}</p>
-            <button
-              onClick={handleRedownload}
-              className="text-xs text-red-500 underline underline-offset-2 hover:text-red-700"
-            >
-              Volver a descargar el agente
-            </button>
           </div>
         )}
       </div>
@@ -306,7 +220,7 @@ export default function DeviceCard() {
       {/* Botón principal */}
       <button
         onClick={handleSync}
-        disabled={isBusy}
+        disabled={buttonDisabled}
         className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white
                    transition-colors hover:bg-blue-700 active:bg-blue-800
                    disabled:cursor-not-allowed disabled:opacity-50"
