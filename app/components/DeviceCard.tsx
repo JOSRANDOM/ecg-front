@@ -4,88 +4,120 @@ import { useEffect, useRef, useState } from "react";
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
-type Phase =
-  | "idle"       // sin acción
-  | "polling"    // sondeando la API    → LED amarillo
-  | "connected"  // dispositivo detectado → LED verde
-  | "error";     // timeout / fallo    → LED rojo
+type StepStatus = "pending" | "active" | "done" | "error";
 
-type LedColor = "none" | "yellow" | "green" | "red";
+interface Steps {
+  download:   StepStatus;
+  connection: StepStatus;
+  detection:  StepStatus;
+}
 
 interface DeviceInfo {
   device_name: string | null;
-  port: string | null;
+  port:        string | null;
 }
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
+const API_URL          = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const POLL_INTERVAL_MS = 3_000;
 const POLL_TIMEOUT_MS  = 90_000;
 
-const LED_COLOR: Record<Phase, LedColor> = {
-  idle:      "none",
-  polling:   "yellow",
-  connected: "green",
-  error:     "red",
+const INITIAL_STEPS: Steps = {
+  download:   "pending",
+  connection: "pending",
+  detection:  "pending",
 };
 
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
-function Led({ color }: { color: LedColor }) {
-  if (color === "none") return null;
+function StepIcon({ index, status }: { index: number; status: StepStatus }) {
+  const base = "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300";
 
-  const dot: Record<Exclude<LedColor, "none">, string> = {
-    yellow: "bg-yellow-400 shadow-[0_0_8px_2px_rgba(250,204,21,0.6)] animate-pulse",
-    green:  "bg-green-400  shadow-[0_0_8px_2px_rgba(74,222,128,0.6)]",
-    red:    "bg-red-500    shadow-[0_0_8px_2px_rgba(239,68,68,0.6)]",
-  };
+  if (status === "done")
+    return (
+      <div className={`${base} bg-green-500 text-white`}>
+        <svg viewBox="0 0 12 12" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <polyline points="2,6 5,9 10,3" />
+        </svg>
+      </div>
+    );
 
-  return <span className={`h-3 w-3 flex-shrink-0 rounded-full ${dot[color]}`} />;
-}
+  if (status === "error")
+    return (
+      <div className={`${base} bg-red-500 text-white`}>✕</div>
+    );
 
-function StatusRow({ phase }: { phase: Phase }) {
-  const color = LED_COLOR[phase];
-
-  const text: Partial<Record<Phase, string>> = {
-    polling:   "Ejecuta el archivo descargado y espera la conexión...",
-    connected: "Dispositivo sincronizado",
-    error:     "No se detectó el dispositivo.",
-  };
-
-  const textColor: Record<LedColor, string> = {
-    none:   "",
-    yellow: "text-gray-500",
-    green:  "text-green-700",
-    red:    "text-red-600",
-  };
-
-  if (phase === "idle") return null;
+  if (status === "active")
+    return (
+      <div className={`${base} bg-blue-600 text-white ring-4 ring-blue-100`}>
+        {index}
+      </div>
+    );
 
   return (
-    <div className="flex items-center gap-2.5">
-      <Led color={color} />
-      <span className={`text-sm ${textColor[color]}`}>{text[phase]}</span>
+    <div className={`${base} bg-gray-100 text-gray-400`}>{index}</div>
+  );
+}
+
+function StepConnector({ topDone }: { topDone: boolean }) {
+  return (
+    <div className="ml-3.5 h-4 w-px transition-colors duration-300"
+         style={{ backgroundColor: topDone ? "#22c55e" : "#e5e7eb" }} />
+  );
+}
+
+function StepItem({
+  index, label, hint, status,
+}: {
+  index:  number;
+  label:  string;
+  hint?:  string;
+  status: StepStatus;
+}) {
+  const labelColor =
+    status === "done"    ? "text-green-700"  :
+    status === "active"  ? "text-blue-700"   :
+    status === "error"   ? "text-red-600"    :
+                           "text-gray-400";
+
+  return (
+    <div className="flex items-start gap-3">
+      <StepIcon index={index} status={status} />
+      <div className="flex-1 pt-0.5">
+        <p className={`text-sm font-medium transition-colors duration-300 ${labelColor}`}>{label}</p>
+        {hint && (
+          <p className="mt-0.5 text-xs text-gray-400">{hint}</p>
+        )}
+      </div>
     </div>
   );
 }
 
-function DeviceDetails({ device }: { device: DeviceInfo }) {
+function DeviceList({ devices }: { devices: DeviceInfo[] }) {
+  if (devices.length === 0) return null;
+
   return (
-    <div className="rounded-xl bg-green-50 px-4 py-3 space-y-1">
-      {device.device_name && (
-        <p className="text-xs text-gray-500">
-          Dispositivo:{" "}
-          <span className="font-medium text-gray-800">{device.device_name}</span>
-        </p>
-      )}
-      {device.port && (
-        <p className="text-xs text-gray-500">
-          Puerto:{" "}
-          <span className="font-mono font-semibold text-gray-800">{device.port}</span>
-        </p>
-      )}
+    <div className="mt-2 space-y-2">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+        Dispositivos detectados
+      </p>
+      {devices.map((d, i) => (
+        <div key={i} className="rounded-xl border border-green-100 bg-green-50 px-4 py-3 space-y-1">
+          {d.device_name && (
+            <p className="text-xs text-gray-500">
+              Dispositivo:{" "}
+              <span className="font-medium text-gray-800">{d.device_name}</span>
+            </p>
+          )}
+          {d.port && (
+            <p className="text-xs text-gray-500">
+              Puerto:{" "}
+              <span className="font-mono font-semibold text-gray-800">{d.port}</span>
+            </p>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -93,24 +125,17 @@ function DeviceDetails({ device }: { device: DeviceInfo }) {
 // ── Componente principal ─────────────────────────────────────────────────────
 
 export default function DeviceCard() {
-  const [phase, setPhase]           = useState<Phase>("idle");
-  const [device, setDevice]         = useState<DeviceInfo | null>(null);
-  const [errMsg, setErrMsg]         = useState<string | null>(null);
-  const [agentReady, setAgentReady] = useState<boolean | null>(null);
+  const [steps,   setSteps]   = useState<Steps>(INITIAL_STEPS);
+  const [devices, setDevices] = useState<DeviceInfo[]>([]);
+  const [started, setStarted] = useState(false);
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timeoutRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mountedRef  = useRef(true);
+  const intervalRef       = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef        = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef        = useRef(true);
+  const connectionDoneRef = useRef(false);
 
   useEffect(() => {
-    // Resetear en cada ejecución del efecto (necesario para React StrictMode)
     mountedRef.current = true;
-
-    fetch(`${API_URL}/agent/info`)
-      .then(res => res.json())
-      .then(data => { if (mountedRef.current) setAgentReady(data.disponible === true); })
-      .catch(() => { if (mountedRef.current) setAgentReady(false); });
-
     return () => {
       mountedRef.current = false;
       clearTimers();
@@ -128,63 +153,94 @@ export default function DeviceCard() {
       const data = await res.json();
       if (!mountedRef.current) return;
 
-      if (res.ok && data.detected) {
-        clearTimers();
-        setDevice({ device_name: data.device_name, port: data.port });
-        setPhase("connected");
+      if (res.ok) {
+        // Paso 2: el agente responde → conexión validada
+        if (!connectionDoneRef.current) {
+          connectionDoneRef.current = true;
+          setSteps(prev => ({ ...prev, connection: "done", detection: "active" }));
+        }
+
+        // Paso 3: dispositivo detectado
+        if (data.detected) {
+          clearTimers();
+          setDevices([{ device_name: data.device_name, port: data.port }]);
+          setSteps(prev => ({ ...prev, detection: "done" }));
+        }
       }
     } catch {
       // fallos individuales se ignoran; el timeout maneja el caso total
     }
   }
 
-  function startPolling() {
-    if (!mountedRef.current) return;
-    setPhase("polling");
+  function startFlow() {
+    connectionDoneRef.current = false;
+    setDevices([]);
+    setStarted(true);
 
-    intervalRef.current = setInterval(pollOnce, POLL_INTERVAL_MS);
+    // Paso 1 — descarga
+    setSteps({ download: "active", connection: "pending", detection: "pending" });
 
-    timeoutRef.current = setTimeout(() => {
-      if (!mountedRef.current) return;
-      clearTimers();
-      setPhase("error");
-      setErrMsg("No se detectó el dispositivo. Asegúrate de que el electrocardiógrafo esté conectado por USB.");
-    }, POLL_TIMEOUT_MS);
-  }
-
-  function handleSync() {
-    clearTimers();
-    setDevice(null);
-    setErrMsg(null);
-
-    // Dispara la descarga del ejecutable
     const link = document.createElement("a");
-    link.href = `${API_URL}/agent/download`;
+    link.href     = `${API_URL}/agent/download`;
     link.download = "agente_contec.exe";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
-    startPolling();
+    setTimeout(() => {
+      if (!mountedRef.current) return;
+      setSteps({ download: "done", connection: "active", detection: "pending" });
+
+      // Paso 2 & 3 — polling
+      intervalRef.current = setInterval(pollOnce, POLL_INTERVAL_MS);
+      timeoutRef.current  = setTimeout(() => {
+        if (!mountedRef.current) return;
+        clearTimers();
+        setSteps(prev => {
+          if (prev.detection  === "active") return { ...prev, detection:  "error" };
+          if (prev.connection === "active") return { ...prev, connection: "error" };
+          return prev;
+        });
+      }, POLL_TIMEOUT_MS);
+    }, 1_200);
   }
 
-  const ledColor  = LED_COLOR[phase];
-  const isBusy    = ledColor === "yellow";
+  function reset() {
+    clearTimers();
+    connectionDoneRef.current = false;
+    setStarted(false);
+    setDevices([]);
+    setSteps(INITIAL_STEPS);
+  }
 
-  const buttonDisabled = isBusy || agentReady !== true;
+  const isComplete = steps.detection === "done";
+  const hasError   =
+    steps.download === "error" ||
+    steps.connection === "error" ||
+    steps.detection === "error";
 
-  const buttonLabel =
-    agentReady === null  ? "Verificando..." :
-    agentReady === false ? "Agente no disponible" :
-    isBusy               ? "Esperando agente..." :
-    phase === "connected" ? "Volver a sincronizar" :
-                           "Sincronizar dispositivo";
+  const stepHints: Record<keyof Steps, Partial<Record<StepStatus, string>>> = {
+    download: {
+      active: "Iniciando descarga...",
+      done:   "agente_contec.exe descargado",
+    },
+    connection: {
+      active: "Ejecuta el archivo descargado y espera...",
+      done:   "Agente conectado a la plataforma",
+      error:  "No se pudo conectar. Revisa que el agente esté en ejecución.",
+    },
+    detection: {
+      active: "Buscando dispositivos USB...",
+      done:   `${devices.length} dispositivo${devices.length !== 1 ? "s" : ""} encontrado${devices.length !== 1 ? "s" : ""}`,
+      error:  "No se detectó ningún dispositivo. Verifica la conexión USB.",
+    },
+  };
 
   return (
     <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-6 shadow-md">
 
       {/* Header */}
-      <div className="mb-5 flex items-start justify-between">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Electrocardiógrafo</h2>
           <p className="text-xs text-gray-400 mt-0.5">CONTEC E3</p>
@@ -194,39 +250,51 @@ export default function DeviceCard() {
         </span>
       </div>
 
-      {/* Área de estado */}
-      <div className="mb-6 min-h-[88px] space-y-3">
-        {phase === "idle" && (
-          agentReady === null ? (
-            <p className="text-sm text-gray-400">Verificando disponibilidad...</p>
-          ) : agentReady === false ? (
-            <p className="text-sm text-red-500">El agente no está disponible. Contacta al administrador.</p>
-          ) : (
-            <p className="text-sm text-gray-400">Sin dispositivo conectado.</p>
-          )
-        )}
+      {/* Stepper */}
+      <div className="mb-6">
+        <StepItem
+          index={1}
+          label="Descargar agente"
+          hint={stepHints.download[steps.download]}
+          status={steps.download}
+        />
+        <StepConnector topDone={steps.download === "done"} />
+        <StepItem
+          index={2}
+          label="Conexión agente ↔ plataforma"
+          hint={stepHints.connection[steps.connection]}
+          status={steps.connection}
+        />
+        <StepConnector topDone={steps.connection === "done"} />
+        <StepItem
+          index={3}
+          label="Detección de dispositivos"
+          hint={stepHints.detection[steps.detection]}
+          status={steps.detection}
+        />
 
-        <StatusRow phase={phase} />
-
-        {phase === "connected" && device && <DeviceDetails device={device} />}
-
-        {phase === "error" && errMsg && (
-          <div className="rounded-xl bg-red-50 px-4 py-3">
-            <p className="text-xs text-red-600">{errMsg}</p>
-          </div>
-        )}
+        {/* Lista de dispositivos */}
+        <DeviceList devices={devices} />
       </div>
 
-      {/* Botón principal */}
-      <button
-        onClick={handleSync}
-        disabled={buttonDisabled}
-        className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white
-                   transition-colors hover:bg-blue-700 active:bg-blue-800
-                   disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {buttonLabel}
-      </button>
+      {/* Botón */}
+      {!started ? (
+        <button
+          onClick={startFlow}
+          className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white
+                     transition-colors hover:bg-blue-700 active:bg-blue-800"
+        >
+          Iniciar sincronización
+        </button>
+      ) : (isComplete || hasError) ? (
+        <button
+          onClick={reset}
+          className="w-full rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700
+                     transition-colors hover:bg-gray-200 active:bg-gray-300"
+        >
+          Reiniciar
+        </button>
+      ) : null}
     </div>
   );
 }
