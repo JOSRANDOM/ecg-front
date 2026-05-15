@@ -31,7 +31,11 @@ const INITIAL_STEPS: Steps = {
 
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
-function StepIcon({ index, status }: { index: number; status: StepStatus }) {
+function StepIcon({ index, status, activeColor = "blue" }: {
+  index:       number;
+  status:      StepStatus;
+  activeColor?: "blue" | "yellow";
+}) {
   const base = "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300";
 
   if (status === "done")
@@ -48,12 +52,14 @@ function StepIcon({ index, status }: { index: number; status: StepStatus }) {
       <div className={`${base} bg-red-500 text-white`}>✕</div>
     );
 
-  if (status === "active")
+  if (status === "active") {
+    const activeCls = activeColor === "yellow"
+      ? "bg-yellow-400 text-white ring-4 ring-yellow-100 animate-pulse"
+      : "bg-blue-600 text-white ring-4 ring-blue-100";
     return (
-      <div className={`${base} bg-blue-600 text-white ring-4 ring-blue-100`}>
-        {index}
-      </div>
+      <div className={`${base} ${activeCls}`}>{index}</div>
     );
+  }
 
   return (
     <div className={`${base} bg-gray-100 text-gray-400`}>{index}</div>
@@ -68,22 +74,24 @@ function StepConnector({ topDone }: { topDone: boolean }) {
 }
 
 function StepItem({
-  index, label, hint, status,
+  index, label, hint, status, activeColor = "blue",
 }: {
-  index:  number;
-  label:  string;
-  hint?:  string;
-  status: StepStatus;
+  index:       number;
+  label:       string;
+  hint?:       string;
+  status:      StepStatus;
+  activeColor?: "blue" | "yellow";
 }) {
   const labelColor =
-    status === "done"    ? "text-green-700"  :
-    status === "active"  ? "text-blue-700"   :
-    status === "error"   ? "text-red-600"    :
-                           "text-gray-400";
+    status === "done"   ? "text-green-700" :
+    status === "active" && activeColor === "yellow" ? "text-yellow-600" :
+    status === "active" ? "text-blue-700"  :
+    status === "error"  ? "text-red-600"   :
+                          "text-gray-400";
 
   return (
     <div className="flex items-start gap-3">
-      <StepIcon index={index} status={status} />
+      <StepIcon index={index} status={status} activeColor={activeColor} />
       <div className="flex-1 pt-0.5">
         <p className={`text-sm font-medium transition-colors duration-300 ${labelColor}`}>{label}</p>
         {hint && (
@@ -154,8 +162,8 @@ export default function DeviceCard() {
       if (!mountedRef.current) return;
 
       if (res.ok) {
-        // Paso 2: el agente responde → conexión validada
-        if (!connectionDoneRef.current) {
+        // Paso 2: el agente se conectó vía WebSocket a la plataforma
+        if (!connectionDoneRef.current && data.agent_connected === true) {
           connectionDoneRef.current = true;
           setSteps(prev => ({ ...prev, connection: "done", detection: "active" }));
         }
@@ -271,6 +279,7 @@ export default function DeviceCard() {
           label="Detección de dispositivos"
           hint={stepHints.detection[steps.detection]}
           status={steps.detection}
+          activeColor="yellow"
         />
 
         {/* Lista de dispositivos */}
