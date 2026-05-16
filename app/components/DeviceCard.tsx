@@ -74,13 +74,14 @@ function StepConnector({ topDone }: { topDone: boolean }) {
 }
 
 function StepItem({
-  index, label, hint, status, activeColor = "blue",
+  index, label, hint, status, activeColor = "blue", action,
 }: {
   index:       number;
   label:       string;
   hint?:       string;
   status:      StepStatus;
   activeColor?: "blue" | "yellow";
+  action?:     { label: string; onClick: () => void };
 }) {
   const labelColor =
     status === "done"   ? "text-green-700" :
@@ -93,7 +94,17 @@ function StepItem({
     <div className="flex items-start gap-3">
       <StepIcon index={index} status={status} activeColor={activeColor} />
       <div className="flex-1 pt-0.5">
-        <p className={`text-sm font-medium transition-colors duration-300 ${labelColor}`}>{label}</p>
+        <div className="flex items-center gap-2">
+          <p className={`text-sm font-medium transition-colors duration-300 ${labelColor}`}>{label}</p>
+          {action && (
+            <button
+              onClick={action.onClick}
+              className="text-xs text-blue-500 hover:text-blue-700 underline-offset-2 underline leading-none"
+            >
+              {action.label}
+            </button>
+          )}
+        </div>
         {hint && (
           <p className="mt-0.5 text-xs text-gray-400">{hint}</p>
         )}
@@ -213,6 +224,22 @@ export default function DeviceCard() {
     }, 1_200);
   }
 
+  function retryDetection() {
+    clearTimers();
+    setDevices([]);
+    setSteps(prev => ({ ...prev, detection: "active" }));
+
+    intervalRef.current = setInterval(pollOnce, POLL_INTERVAL_MS);
+    timeoutRef.current  = setTimeout(() => {
+      if (!mountedRef.current) return;
+      clearTimers();
+      setSteps(prev => {
+        if (prev.detection === "active") return { ...prev, detection: "error" };
+        return prev;
+      });
+    }, POLL_TIMEOUT_MS);
+  }
+
   function reset() {
     clearTimers();
     connectionDoneRef.current = false;
@@ -280,6 +307,11 @@ export default function DeviceCard() {
           hint={stepHints.detection[steps.detection]}
           status={steps.detection}
           activeColor="yellow"
+          action={
+            (steps.detection === "active" || steps.detection === "error")
+              ? { label: "Volver a buscar", onClick: retryDetection }
+              : undefined
+          }
         />
 
         {/* Lista de dispositivos */}
