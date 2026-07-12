@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "./components/Navbar";
+import DeviceStatusBar from "./components/DeviceStatusBar";
+import { obtenerSesion } from "@/lib/session";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,21 +16,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ECG Panel — CONTEC E3",
+  title: "Cardioflow E3",
   description: "Panel de gestión del electrocardiógrafo CONTEC E3",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const sesion = await obtenerSesion();
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {sesion && (
+          <>
+            <Navbar etiqueta={sesion.etiqueta} permisos={sesion.permisos} />
+            <DeviceStatusBar />
+          </>
+        )}
+        {children}
+        {sesion && (
+          <footer className="mt-auto border-t border-gray-100 bg-white px-6 py-3">
+            <p className="text-xs text-gray-400 text-center">
+              © {new Date().getFullYear()} Cardioflow E3. Todos los derechos reservados.
+            </p>
+          </footer>
+        )}
+      </body>
     </html>
   );
 }
