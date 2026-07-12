@@ -3,7 +3,10 @@ import { verificarToken } from './lib/jwt'
 
 const PUBLIC_PATHS = ['/login']
 const MAINTENANCE_PATH = '/mantenimiento'
-const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true'
+// Tolerante a "TRUE"/" true "/etc — un env var mal tipeado (mayúsculas,
+// espacio de más) no debe dejar el modo mantenimiento silenciosamente
+// apagado cuando alguien cree que lo activó.
+const MAINTENANCE_MODE = (process.env.MAINTENANCE_MODE ?? '').trim().toLowerCase() === 'true'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
