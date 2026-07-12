@@ -39,7 +39,7 @@ export default function DashboardChart({ data }: Props) {
             fontSize: "12px",
             boxShadow: "0 1px 6px rgba(0,0,0,.06)",
           }}
-          formatter={(value: number) => [value, "Estudios"]}
+          formatter={(value) => [value, "Estudios"]}
         />
         <Bar dataKey="estudios" fill="#2563eb" radius={[6, 6, 0, 0]} />
       </BarChart>
