@@ -62,6 +62,12 @@ const GRUPOS: { recurso: string; permisos: { id: string; label: string }[] }[] =
     ],
   },
   {
+    recurso: "Auditoría",
+    permisos: [
+      { id: "auditoria:leer", label: "Ver auditoría de accesos" },
+    ],
+  },
+  {
     recurso: "Sistema",
     permisos: [
       { id: "roles:leer", label: "Ver esta matriz de roles y permisos" },

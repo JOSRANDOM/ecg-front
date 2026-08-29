@@ -57,6 +57,26 @@ export interface UsuarioBasico {
   activo: boolean;
 }
 
+export type AccionAuditoria =
+  | "ver_paciente" | "crear_paciente" | "actualizar_paciente"
+  | "ver_registro_ecg" | "crear_registro_ecg" | "revisar_registro_ecg"
+  | "subir_imagen_ecg";
+
+/** Evento de auditoría — ver GET /api/auditoria. `usuario_nombre` es un
+ * snapshot (username, no nombre_completo — UsuarioAutenticado en
+ * pacientes-service no trae nombre completo, mismo criterio que
+ * tecnico_nombre en RegistroEcg). */
+export interface EventoAuditoria {
+  id: string;
+  paciente_id: string;
+  entidad_tipo: "paciente" | "registro_ecg" | "imagen_ecg";
+  entidad_id: string;
+  accion: AccionAuditoria;
+  usuario_id: string;
+  usuario_nombre: string;
+  creado_en: string;
+}
+
 /** Foto/PDF de un ECG en papel subido manualmente (fuera del flujo
  * estructurado de RegistroEcg) — ver GET/POST /api/pacientes/{id}/imagenes-ecg.
  * `url` es una signed URL de Supabase Storage con vigencia de 1h, resuelta

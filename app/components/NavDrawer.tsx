@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Home, Users, Settings2, Activity, UserCog, CircleUser, ShieldCheck, Search, FileSpreadsheet } from "lucide-react";
+import { Menu, X, Home, Users, Settings2, Activity, UserCog, CircleUser, ShieldCheck, Search, FileSpreadsheet, History } from "lucide-react";
 import LogoutButton from "./LogoutButton";
 
 interface Props {
@@ -13,6 +13,7 @@ export default function NavDrawer({ permisos }: Props) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   const puedeVerRoles = permisos.includes("roles:leer");
+  const puedeVerAuditoria = permisos.includes("auditoria:leer");
 
   return (
     <>
@@ -120,6 +121,19 @@ export default function NavDrawer({ permisos }: Props) {
             <UserCog className="h-4 w-4 flex-shrink-0" strokeWidth={1.75} />
             Usuarios
           </Link>
+
+          {/* Auditoría — exclusivo de quien tenga auditoria:leer */}
+          {puedeVerAuditoria && (
+            <Link
+              href="/auditoria"
+              onClick={close}
+              className="flex w-full items-center gap-3 rounded-xl bg-gray-700 px-4 py-3
+                         text-sm font-medium text-white transition-colors hover:bg-gray-800"
+            >
+              <History className="h-4 w-4 flex-shrink-0" strokeWidth={1.75} />
+              Auditoría
+            </Link>
+          )}
 
           {/* Roles y permisos — exclusivo de webmaster */}
           {puedeVerRoles && (
