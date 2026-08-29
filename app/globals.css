@@ -26,3 +26,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Informe de ECG en PDF (window.print): el navegador imprime lo que hay en
+ * pantalla, así que el layout imprimible vive en un bloque `print:block`
+ * aparte (ver app/pacientes/[id]/registros/[registroId]/page.tsx) con
+ * colores fijos en vez de heredar el tema oscuro — un fondo negro
+ * desperdiciaría tinta y no es lo que alguien espera de un PDF clínico. */
+@media print {
+  @page {
+    margin: 1.5cm;
+  }
+}

@@ -48,7 +48,7 @@ export default async function RootLayout({
         )}
         {children}
         {sesion && (
-          <footer className="mt-auto border-t border-gray-100 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-950">
+          <footer className="mt-auto border-t border-gray-100 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-950 print:hidden">
             <p className="text-xs text-gray-400 text-center dark:text-gray-600">
               © {new Date().getFullYear()} Cardioflow E3. Todos los derechos reservados.
             </p>

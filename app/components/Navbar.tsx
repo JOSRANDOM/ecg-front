@@ -13,7 +13,7 @@ interface Props {
 
 export default function Navbar({ etiqueta, permisos }: Props) {
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 dark:bg-gray-950 dark:border-gray-800">
+    <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 dark:bg-gray-950 dark:border-gray-800 print:hidden">
       <div className="flex h-14 w-full items-center gap-3 px-6">
         <NavDrawer permisos={permisos} />
         <Link

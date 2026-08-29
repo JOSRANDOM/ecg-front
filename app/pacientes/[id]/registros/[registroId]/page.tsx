@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileHeart, CheckCircle2, Clock, Loader2,
-  Stethoscope, ClipboardList, HeartPulse, Stamp,
+  Stethoscope, ClipboardList, HeartPulse, Stamp, Printer,
 } from "lucide-react";
 import {
   type EstadoEcg, type Paciente, type RegistroEcg,
@@ -56,6 +56,110 @@ function Seccion({
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{titulo}</h2>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
+    </div>
+  );
+}
+
+// ── Reporte imprimible ───────────────────────────────────────────────────────
+// Solo visible al imprimir (window.print → "Guardar como PDF"). Colores fijos
+// a propósito, sin variantes dark: — un PDF clínico debe verse igual sin
+// importar el tema con el que se generó, y nunca en fondo negro.
+
+function CampoImpreso({ label, valor }: { label: string; valor: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-[9px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
+      <p className="mt-0.5 text-[13px] text-gray-900">{valor || "—"}</p>
+    </div>
+  );
+}
+
+function ListaImpresa({ items }: { items: string[] }) {
+  return <>{items.length > 0 ? items.join(", ") : "—"}</>;
+}
+
+function ReporteImprimible({
+  paciente, registro, revisorNombre,
+}: { paciente: Paciente; registro: RegistroEcg; revisorNombre: string | null }) {
+  return (
+    <div className="hidden print:block text-black">
+      <div className="mb-6 flex items-center justify-between border-b-2 border-gray-900 pb-3">
+        <div>
+          <p className="text-lg font-bold">Cardioflow E3</p>
+          <p className="text-xs text-gray-600">Informe de Electrocardiograma</p>
+        </div>
+        <p className="text-[10px] text-gray-500">
+          Generado el {new Date().toLocaleDateString("es-CO", { day: "2-digit", month: "long", year: "numeric" })}
+        </p>
+      </div>
+
+      <div className="mb-5 grid grid-cols-4 gap-3 border border-gray-300 p-3">
+        <CampoImpreso label="Paciente" valor={paciente.nombre_completo} />
+        <CampoImpreso label="Documento" valor={paciente.documento} />
+        <CampoImpreso label="Edad" valor={`${paciente.edad} años`} />
+        <CampoImpreso label="Tipo de sangre" valor={paciente.tipo_sangre} />
+      </div>
+
+      <div className="mb-5 grid grid-cols-4 gap-3">
+        <CampoImpreso label="Fecha del estudio" valor={formatFechaHora(registro.fecha)} />
+        <CampoImpreso label="Duración" valor={`${registro.duracion_segundos}s`} />
+        <CampoImpreso label="Técnico" valor={registro.tecnico_nombre} />
+        <CampoImpreso label="Médico" valor={registro.medico_nombre ?? "Sin asignar"} />
+      </div>
+
+      <div className="mb-5">
+        <p className="mb-2 border-b border-gray-300 pb-1 text-xs font-bold uppercase tracking-wide">Datos clínicos</p>
+        <div className="grid grid-cols-2 gap-3">
+          <CampoImpreso label="Síntomas" valor={<ListaImpresa items={registro.sintomas} />} />
+          <CampoImpreso label="Antecedentes" valor={<ListaImpresa items={registro.antecedentes} />} />
+          {registro.descripcion_sintomas && (
+            <div className="col-span-2"><CampoImpreso label="Descripción de síntomas" valor={registro.descripcion_sintomas} /></div>
+          )}
+          {registro.antecedentes_extra && (
+            <div className="col-span-2"><CampoImpreso label="Antecedentes adicionales" valor={registro.antecedentes_extra} /></div>
+          )}
+          {registro.notas && (
+            <div className="col-span-2"><CampoImpreso label="Notas" valor={registro.notas} /></div>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <p className="mb-2 border-b border-gray-300 pb-1 text-xs font-bold uppercase tracking-wide">Informe</p>
+        {registro.estado === "pendiente" ? (
+          <p className="text-[13px] text-gray-500">Estudio pendiente de revisión médica.</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <CampoImpreso label="Ritmo" valor={<ListaImpresa items={registro.ritmo} />} />
+            <CampoImpreso label="Frecuencia cardíaca" valor={registro.fc_registrada != null ? `${registro.fc_registrada} lpm` : null} />
+            <div className="col-span-2"><CampoImpreso label="Alteraciones" valor={<ListaImpresa items={registro.alteraciones} />} /></div>
+            {registro.descripcion_hallazgos && (
+              <div className="col-span-2"><CampoImpreso label="Hallazgos" valor={registro.descripcion_hallazgos} /></div>
+            )}
+            <CampoImpreso label="Diagnóstico" valor={registro.diagnostico} />
+            <CampoImpreso label="Diagnóstico secundario" valor={registro.diagnostico_secundario} />
+            {registro.recomendaciones && (
+              <div className="col-span-2"><CampoImpreso label="Recomendaciones" valor={registro.recomendaciones} /></div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-16 grid grid-cols-2 gap-8">
+        <div className="border-t border-gray-400 pt-1 text-center text-[10px] text-gray-500">
+          Firma del médico responsable
+        </div>
+        <div className="border-t border-gray-400 pt-1 text-center text-[10px] text-gray-500">
+          Sello de la institución
+        </div>
+      </div>
+
+      {registro.estado === "revisado" && registro.revisado_en && (
+        <p className="mt-6 text-[10px] text-gray-400">
+          {(revisorNombre ?? registro.medico_nombre) ? `Revisado por ${revisorNombre ?? registro.medico_nombre}` : "Revisado"}
+          {" "}· {formatFechaHora(registro.revisado_en)}
+        </p>
+      )}
     </div>
   );
 }
@@ -142,8 +246,8 @@ export default function RegistroDetallePage() {
   const Icon = est.icon;
 
   return (
-    <main className="flex flex-1 flex-col bg-gray-50 dark:bg-gray-950">
-      <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-4">
+    <main className="flex flex-1 flex-col bg-gray-50 dark:bg-gray-950 print:bg-white">
+      <div className="print:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-4">
         <button
           onClick={() => router.push(`/pacientes/${id}`)}
           className="mb-4 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500
@@ -162,15 +266,29 @@ export default function RegistroDetallePage() {
               {formatFechaHora(registro.fecha)} · {registro.duracion_segundos}s
             </p>
           </div>
-          <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${est.cls}`}>
-            <Icon className={`h-3.5 w-3.5 ${registro.estado === "en_proceso" ? "animate-spin" : ""}`}
-                  strokeWidth={2} />
-            {est.label}
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700
+                         px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 transition-colors
+                         hover:bg-gray-50 dark:hover:bg-gray-800"
+              title="Descargar informe en PDF"
+            >
+              <Printer className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Descargar PDF
+            </button>
+            <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${est.cls}`}>
+              <Icon className={`h-3.5 w-3.5 ${registro.estado === "en_proceso" ? "animate-spin" : ""}`}
+                    strokeWidth={2} />
+              {est.label}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl flex-1 space-y-4 px-6 py-6">
+      <ReporteImprimible paciente={paciente} registro={registro} revisorNombre={revisorNombre} />
+
+      <div className="print:hidden mx-auto w-full max-w-3xl flex-1 space-y-4 px-6 py-6">
 
         <Seccion icon={Stethoscope} titulo="Asignación">
           <Campo label="Técnico">{registro.tecnico_nombre}</Campo>
