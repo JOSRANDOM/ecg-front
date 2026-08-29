@@ -3,6 +3,7 @@ import { Activity } from "lucide-react";
 import NavDrawer from "./NavDrawer";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
+import SearchTrigger from "./SearchTrigger";
 
 interface Props {
   etiqueta: string;
@@ -24,7 +25,8 @@ export default function Navbar({ etiqueta, permisos }: Props) {
         <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[11px] font-medium text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
           {etiqueta}
         </span>
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-2">
+          <SearchTrigger />
           <ThemeToggle />
           <LogoutButton variant="icon" />
         </div>

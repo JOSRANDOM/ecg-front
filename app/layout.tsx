@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import DeviceStatusBar from "./components/DeviceStatusBar";
+import CommandPalette from "./components/CommandPalette";
 import { THEME_INIT_SCRIPT } from "./components/ThemeToggle";
 import { obtenerSesion } from "@/lib/session";
 
@@ -42,6 +43,7 @@ export default async function RootLayout({
           <>
             <Navbar etiqueta={sesion.etiqueta} permisos={sesion.permisos} />
             <DeviceStatusBar />
+            <CommandPalette />
           </>
         )}
         {children}
