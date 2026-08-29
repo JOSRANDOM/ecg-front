@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Activity } from "lucide-react";
+import EcgLoginBackground from "./EcgLoginBackground";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,11 +39,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 dark:bg-gray-950">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4 dark:bg-gray-950">
+      <EcgLoginBackground />
+
+      <div className="relative z-10 w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-200">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-200 dark:shadow-blue-950">
             <Activity className="h-6 w-6 text-white" strokeWidth={2} />
           </div>
           <div className="text-center">
@@ -54,7 +57,8 @@ export default function LoginPage() {
         {/* Card */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-gray-100 bg-white px-8 py-8 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+          className="rounded-2xl border border-gray-100 bg-white/85 px-8 py-8 shadow-xl shadow-gray-200/50 backdrop-blur-md
+                     dark:border-gray-800 dark:bg-gray-900/70 dark:shadow-black/40"
         >
           <div className="space-y-5">
             <div>
@@ -72,7 +76,7 @@ export default function LoginPage() {
                            text-gray-900 outline-none transition-colors
                            focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100
                            dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:bg-gray-900 dark:focus:ring-blue-500/20"
-                placeholder="jmori"
+                placeholder="Usuario"
               />
             </div>
 
@@ -91,7 +95,7 @@ export default function LoginPage() {
                            text-gray-900 outline-none transition-colors
                            focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100
                            dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:bg-gray-900 dark:focus:ring-blue-500/20"
-                placeholder="••••••••"
+                placeholder="Contraseña"
               />
             </div>
 
