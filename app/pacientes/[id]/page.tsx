@@ -269,8 +269,11 @@ export default function PacienteDetallePage() {
 
                     {/* Footer */}
                     <div className="border-t border-gray-50 px-5 py-3">
-                      <button className="flex items-center gap-1 text-xs font-medium text-blue-500
-                                         transition-colors hover:text-blue-700">
+                      <button
+                        onClick={() => router.push(`/pacientes/${id}/registros/${reg.id}`)}
+                        className="flex items-center gap-1 text-xs font-medium text-blue-500
+                                   transition-colors hover:text-blue-700"
+                      >
                         Ver registro completo
                         <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
                       </button>
