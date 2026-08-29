@@ -37,11 +37,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
+  const sesion = await verificarToken(request.cookies.get('auth_token')?.value)
+
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    // Ya autenticado y visitando /login manualmente (ej. entró por historial
+    // o marcador): no tiene sentido mostrarle el form de nuevo, se ve el
+    // navbar de sesión activa apilado sobre el login. Lo mandamos al panel.
+    if (sesion) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
     return NextResponse.next()
   }
-
-  const sesion = await verificarToken(request.cookies.get('auth_token')?.value)
 
   if (!sesion) {
     const response = NextResponse.redirect(new URL('/login', request.url))

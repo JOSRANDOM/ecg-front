@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileHeart, User, Phone, Droplets,
@@ -8,7 +9,11 @@ import {
 import {
   ResponsiveContainer, LineChart, Line,
 } from "recharts";
-import { getPaciente, ecgData, type EstadoPaciente, type EstadoEcg } from "../_data";
+import { ecgData } from "../_ecgMock";
+import {
+  type EstadoPaciente, type EstadoEcg, type Paciente, type RegistroEcg,
+  avatarColor, iniciales,
+} from "../_types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -40,22 +45,6 @@ const ESTADO_ECG: Record<EstadoEcg, {
   en_proceso: { label: "En proceso", cls: "bg-blue-50 text-blue-600",     icon: Loader2      },
 };
 
-const AVATAR_COLORS = [
-  "bg-blue-100 text-blue-700",
-  "bg-violet-100 text-violet-700",
-  "bg-teal-100 text-teal-700",
-  "bg-rose-100 text-rose-700",
-  "bg-amber-100 text-amber-700",
-];
-
-function avatarColor(id: string) {
-  return AVATAR_COLORS[parseInt(id) % AVATAR_COLORS.length];
-}
-
-function iniciales(nombre: string) {
-  return nombre.split(" ").slice(0, 2).map(p => p[0]).join("").toUpperCase();
-}
-
 // ── Mini ECG chart ────────────────────────────────────────────────────────────
 
 const ECG_POINTS = ecgData();
@@ -82,9 +71,51 @@ function MiniEcgChart({ color = "#3b82f6" }: { color?: string }) {
 export default function PacienteDetallePage() {
   const { id }   = useParams<{ id: string }>();
   const router   = useRouter();
-  const paciente = getPaciente(id);
 
-  if (!paciente) {
+  const [paciente, setPaciente]   = useState<Paciente | null>(null);
+  const [registros, setRegistros] = useState<RegistroEcg[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [notFound, setNotFound]   = useState(false);
+
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      try {
+        const [resPaciente, resRegistros] = await Promise.all([
+          fetch(`/api/pacientes/${id}`),
+          fetch(`/api/pacientes/${id}/registros-ecg`),
+        ]);
+        if (resPaciente.status === 404) {
+          if (!cancelado) setNotFound(true);
+          return;
+        }
+        if (!resPaciente.ok || !resRegistros.ok) throw new Error();
+        const [dataPaciente, dataRegistros] = await Promise.all([
+          resPaciente.json(),
+          resRegistros.json(),
+        ]);
+        if (!cancelado) {
+          setPaciente(dataPaciente);
+          setRegistros(dataRegistros);
+        }
+      } catch {
+        if (!cancelado) setNotFound(true);
+      } finally {
+        if (!cancelado) setLoading(false);
+      }
+    })();
+    return () => { cancelado = true; };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center bg-white p-6">
+        <Loader2 className="h-6 w-6 animate-spin text-gray-300" strokeWidth={1.75} />
+      </main>
+    );
+  }
+
+  if (notFound || !paciente) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center bg-white p-6">
         <p className="text-sm text-gray-400">Paciente no encontrado.</p>
@@ -116,13 +147,13 @@ export default function PacienteDetallePage() {
           {/* Avatar */}
           <div className={`flex h-14 w-14 flex-shrink-0 items-center justify-center
                           rounded-2xl text-base font-bold ${avatarColor(paciente.id)}`}>
-            {iniciales(paciente.nombre)}
+            {iniciales(paciente.nombre_completo)}
           </div>
 
           {/* Info */}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-lg font-bold tracking-tight text-gray-900">{paciente.nombre}</h1>
+              <h1 className="text-lg font-bold tracking-tight text-gray-900">{paciente.nombre_completo}</h1>
               <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${estadoPac.cls}`}>
                 {estadoPac.label}
               </span>
@@ -134,7 +165,7 @@ export default function PacienteDetallePage() {
               </span>
               <span className="flex items-center gap-1.5">
                 <Droplets className="h-3.5 w-3.5" strokeWidth={1.75} />
-                {paciente.tipoSangre}
+                {paciente.tipo_sangre}
               </span>
               <span className="flex items-center gap-1.5">
                 <Phone className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -154,7 +185,7 @@ export default function PacienteDetallePage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-gray-50 px-2.5 py-1 text-[11px] text-gray-400">
-              {paciente.registros.length} registro{paciente.registros.length !== 1 ? "s" : ""}
+              {registros.length} registro{registros.length !== 1 ? "s" : ""}
             </span>
             <button
               onClick={() => router.push(`/pacientes/${id}/nuevo-estudio`)}
@@ -167,7 +198,7 @@ export default function PacienteDetallePage() {
           </div>
         </div>
 
-        {paciente.registros.length === 0 ? (
+        {registros.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed
                           border-gray-200 py-16 text-center">
             <FileHeart className="mb-3 h-8 w-8 text-gray-200" strokeWidth={1.5} />
@@ -184,7 +215,7 @@ export default function PacienteDetallePage() {
           </div>
         ) : (
           <ul className="space-y-3">
-            {paciente.registros.map((reg, idx) => {
+            {registros.map((reg, idx) => {
               const est  = ESTADO_ECG[reg.estado];
               const Icon = est.icon;
               const isRev = reg.estado === "revisado";
@@ -197,10 +228,10 @@ export default function PacienteDetallePage() {
                     <div className="flex items-center justify-between px-5 pt-4 pb-2">
                       <div>
                         <p className="text-xs font-semibold text-gray-900">
-                          Electrocardiograma #{String(paciente.registros.length - idx).padStart(3, "0")}
+                          Electrocardiograma #{String(registros.length - idx).padStart(3, "0")}
                         </p>
                         <p className="mt-0.5 text-[11px] text-gray-400">
-                          {formatFecha(reg.fecha)} · {formatHora(reg.fecha)} · {reg.duracion}
+                          {formatFecha(reg.fecha)} · {formatHora(reg.fecha)} · {reg.duracion_segundos}s
                         </p>
                       </div>
                       <span className={`flex items-center gap-1 rounded-full px-2.5 py-1
@@ -221,17 +252,17 @@ export default function PacienteDetallePage() {
                     {/* Meta */}
                     <div className="px-5 py-3">
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-400">
-                        <span>Técnico: <span className="font-medium text-gray-600">{reg.tecnico}</span></span>
-                        {reg.medico
-                          ? <span>Médico: <span className="font-medium text-gray-600">{reg.medico}</span></span>
+                        <span>Técnico: <span className="font-medium text-gray-600">{reg.tecnico_nombre}</span></span>
+                        {reg.medico_nombre
+                          ? <span>Médico: <span className="font-medium text-gray-600">{reg.medico_nombre}</span></span>
                           : <span className="text-gray-300">Sin médico asignado</span>
                         }
                         <span>CONTEC E3</span>
                       </div>
-                      {reg.notas && (
+                      {(reg.diagnostico || reg.notas) && (
                         <p className="mt-2 rounded-xl bg-gray-50 px-3 py-2 text-[11px]
                                       leading-relaxed text-gray-500 italic">
-                          &ldquo;{reg.notas}&rdquo;
+                          &ldquo;{reg.diagnostico || reg.notas}&rdquo;
                         </p>
                       )}
                     </div>

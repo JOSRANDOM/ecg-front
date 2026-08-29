@@ -1,31 +1,7 @@
 import { Users, Activity, Clock, CheckCircle } from "lucide-react";
-import { PACIENTES } from "./pacientes/_data";
-import type { EstadoEcg } from "./pacientes/_data";
+import { fetchPacientesService } from "@/lib/pacientesService";
+import type { EstadoEcg, Paciente, RegistroEcg } from "./pacientes/_types";
 import DashboardChart from "./components/DashboardChart";
-
-const allRegistros = PACIENTES.flatMap((p) =>
-  p.registros.map((r) => ({ ...r, paciente: p.nombre }))
-);
-
-const totalPacientes   = PACIENTES.length;
-const pacientesActivos = PACIENTES.filter((p) => p.estado === "activo").length;
-const totalEstudios    = allRegistros.length;
-const sinRevisar       = allRegistros.filter(
-  (r) => r.estado === "pendiente" || r.estado === "en_proceso"
-).length;
-
-const recientes = [...allRegistros]
-  .sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-  .slice(0, 6);
-
-const chartData = [
-  { mes: "Dic", estudios: 1 },
-  { mes: "Ene", estudios: 2 },
-  { mes: "Feb", estudios: 3 },
-  { mes: "Mar", estudios: 3 },
-  { mes: "Abr", estudios: 2 },
-  { mes: "May", estudios: 3 },
-];
 
 const estadoBadge: Record<EstadoEcg, { label: string; cls: string }> = {
   revisado:   { label: "Revisado",   cls: "bg-green-50 text-green-600" },
@@ -41,7 +17,58 @@ function formatFecha(iso: string) {
   });
 }
 
-export default function Home() {
+interface RegistroConPaciente extends RegistroEcg {
+  paciente_nombre: string;
+}
+
+async function cargarDatos(): Promise<{
+  pacientes: Paciente[];
+  todos: RegistroConPaciente[];
+}> {
+  // Sin endpoint de /stats dedicado (ver plan): traemos hasta 1000 registros
+  // globales y reducimos aquí mismo — a la escala de una clínica esto es
+  // más simple que mantener contadores agregados en el backend.
+  const [resPacientes, resRegistros] = await Promise.all([
+    fetchPacientesService("/api/v1/pacientes"),
+    fetchPacientesService("/api/v1/registros-ecg?limite=1000"),
+  ]);
+
+  if (!resPacientes || !resRegistros || !resPacientes.ok || !resRegistros.ok) {
+    return { pacientes: [], todos: [] };
+  }
+
+  const pacientes: Paciente[] = await resPacientes.json();
+  const registros: RegistroEcg[] = await resRegistros.json();
+
+  const nombrePorId = new Map(pacientes.map((p) => [p.id, p.nombre_completo]));
+  const todos = registros.map((r) => ({
+    ...r,
+    paciente_nombre: nombrePorId.get(r.paciente_id) ?? "Paciente",
+  }));
+
+  return { pacientes, todos };
+}
+
+export default async function Home() {
+  const { pacientes, todos } = await cargarDatos();
+
+  const totalPacientes   = pacientes.length;
+  const pacientesActivos = pacientes.filter((p) => p.estado === "activo").length;
+  const totalEstudios    = todos.length;
+  const sinRevisar       = todos.filter(
+    (r) => r.estado === "pendiente" || r.estado === "en_proceso"
+  ).length;
+  const recientes        = todos.slice(0, 6);
+
+  const chartData = [
+    { mes: "Dic", estudios: 1 },
+    { mes: "Ene", estudios: 2 },
+    { mes: "Feb", estudios: 3 },
+    { mes: "Mar", estudios: 3 },
+    { mes: "Abr", estudios: 2 },
+    { mes: "May", estudios: 3 },
+  ];
+
   return (
     <main className="flex-1 bg-gray-50 p-6">
       <div className="mx-auto max-w-6xl space-y-6">
@@ -103,14 +130,16 @@ export default function Home() {
               <p className="mt-0.5 text-xs text-gray-400">Últimos registros ECG</p>
             </div>
             <div className="divide-y divide-gray-50">
-              {recientes.map((r) => {
+              {recientes.length === 0 ? (
+                <p className="px-5 pb-5 text-xs text-gray-400">Sin estudios registrados todavía.</p>
+              ) : recientes.map((r) => {
                 const badge = estadoBadge[r.estado];
                 return (
                   <div key={r.id} className="flex items-center gap-4 px-5 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-800">{r.paciente}</p>
+                      <p className="truncate text-sm font-medium text-gray-800">{r.paciente_nombre}</p>
                       <p className="text-xs text-gray-400">
-                        {r.tecnico} · {formatFecha(r.fecha)}
+                        {r.tecnico_nombre} · {formatFecha(r.fecha)}
                       </p>
                     </div>
                     <span

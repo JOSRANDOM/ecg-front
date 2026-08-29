@@ -3,16 +3,23 @@ services:
     build:
       context: .
       target: runner
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     ports:
       - "${APP_PORT:-3000}:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      - USUARIOS_SERVICE_URL=${USUARIOS_SERVICE_URL:-http://localhost:8001}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - PACIENTES_SERVICE_URL=${PACIENTES_SERVICE_URL:-http://localhost:8002}
     restart: unless-stopped
 
   web-dev:
     build:
       context: .
       target: development
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     volumes:
       - .:/app
       - /app/node_modules
@@ -21,5 +28,8 @@ services:
       - "${APP_PORT:-3000}:3000"
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      - USUARIOS_SERVICE_URL=${USUARIOS_SERVICE_URL:-http://localhost:8001}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - PACIENTES_SERVICE_URL=${PACIENTES_SERVICE_URL:-http://localhost:8002}
     profiles:
       - dev

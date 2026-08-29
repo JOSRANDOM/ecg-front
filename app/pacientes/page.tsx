@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, ChevronRight, Activity, UserPlus } from "lucide-react";
-import { PACIENTES, type EstadoPaciente } from "./_data";
+import { Search, ChevronRight, Activity, UserPlus, Loader2 } from "lucide-react";
+import { type EstadoPaciente, type Paciente, avatarColor, iniciales } from "./_types";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
 
 function formatFecha(iso: string) {
-  const [year, month, day] = iso.split("-").map(Number);
+  const [year, month, day] = iso.split("T")[0].split("-").map(Number);
   return `${day} ${MESES[month - 1]}. ${year}`;
 }
 
@@ -21,32 +21,36 @@ const ESTADO_CONFIG: Record<EstadoPaciente, { label: string; cls: string }> = {
   inactivo:  { label: "Inactivo",  cls: "bg-gray-100 text-gray-500"    },
 };
 
-function iniciales(nombre: string) {
-  return nombre.split(" ").slice(0, 2).map(p => p[0]).join("").toUpperCase();
-}
-
-const AVATAR_COLORS = [
-  "bg-blue-100 text-blue-700",
-  "bg-violet-100 text-violet-700",
-  "bg-teal-100 text-teal-700",
-  "bg-rose-100 text-rose-700",
-  "bg-amber-100 text-amber-700",
-];
-
-function avatarColor(id: string) {
-  return AVATAR_COLORS[parseInt(id) % AVATAR_COLORS.length];
-}
-
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export default function PacientesPage() {
   const router  = useRouter();
   const [query, setQuery] = useState("");
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filtrados = PACIENTES.filter(p => {
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/pacientes");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!cancelado) setPacientes(data);
+      } catch {
+        if (!cancelado) setError("No se pudo cargar la lista de pacientes.");
+      } finally {
+        if (!cancelado) setLoading(false);
+      }
+    })();
+    return () => { cancelado = true; };
+  }, []);
+
+  const filtrados = pacientes.filter(p => {
     const q = query.toLowerCase();
     return (
-      p.nombre.toLowerCase().includes(q) ||
+      p.nombre_completo.toLowerCase().includes(q) ||
       p.documento.replace(/\./g, "").includes(q.replace(/\./g, ""))
     );
   });
@@ -58,7 +62,9 @@ export default function PacientesPage() {
         <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-gray-900">Pacientes</h1>
-            <p className="mt-0.5 text-xs text-gray-400">{PACIENTES.length} pacientes registrados</p>
+            <p className="mt-0.5 text-xs text-gray-400">
+              {loading ? "Cargando…" : `${pacientes.length} pacientes registrados`}
+            </p>
           </div>
           <button
             onClick={() => router.push("/pacientes/nuevo")}
@@ -88,11 +94,22 @@ export default function PacientesPage() {
 
         {/* Lista */}
         <div className="flex-1 overflow-y-auto px-6 pb-6">
-          {filtrados.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <Loader2 className="mb-3 h-6 w-6 animate-spin text-gray-300" strokeWidth={1.75} />
+              <p className="text-sm text-gray-400">Cargando pacientes…</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          ) : filtrados.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Activity className="mb-3 h-8 w-8 text-gray-200" strokeWidth={1.5} />
               <p className="text-sm text-gray-400">
-                Sin resultados para <span className="font-medium">&ldquo;{query}&rdquo;</span>
+                {query
+                  ? <>Sin resultados para <span className="font-medium">&ldquo;{query}&rdquo;</span></>
+                  : "Sin pacientes registrados"}
               </p>
             </div>
           ) : (
@@ -108,11 +125,11 @@ export default function PacientesPage() {
                     >
                       <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center
                                       rounded-full text-xs font-bold ${avatarColor(p.id)}`}>
-                        {iniciales(p.nombre)}
+                        {iniciales(p.nombre_completo)}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-medium text-gray-900">{p.nombre}</p>
+                          <p className="truncate text-sm font-medium text-gray-900">{p.nombre_completo}</p>
                           <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${estado.cls}`}>
                             {estado.label}
                           </span>
@@ -123,8 +140,8 @@ export default function PacientesPage() {
                           <span>{p.edad} años</span>
                           <span>·</span>
                           <span>
-                            {p.ultimoEcg
-                              ? <>Último ECG: {formatFecha(p.ultimoEcg)}</>
+                            {p.ultimo_ecg
+                              ? <>Último ECG: {formatFecha(p.ultimo_ecg)}</>
                               : "Sin ECG registrado"}
                           </span>
                         </div>

@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ClipboardList, Activity, Play, Square, FileText } from "lucide-react";
-import type { EstadoPaciente } from "../_data";
+import { ArrowLeft, ClipboardList, Activity, Play, Square, FileText, Loader2 } from "lucide-react";
+import type { EstadoPaciente, UsuarioBasico } from "../_types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -43,9 +43,10 @@ interface FormPaciente {
   documento:           string;
   edad:                string;
   telefono:            string;
+  tipoSangre:          string;
   estado:              EstadoPaciente;
-  tecnico:             string;
-  medico:              string;
+  tecnicoId:           string;
+  medicoId:            string;
   sintomas:            string[];
   descripcionSintomas: string;
   antecedentes:        string[];
@@ -55,8 +56,7 @@ interface FormPaciente {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TECNICOS        = ["Sofía Restrepo","Andrés Mora"];
-const MEDICOS         = ["Dr. Ricardo Montoya","Dr. Camila Vásquez"];
+const TIPOS_SANGRE = ["A+","A-","B+","B-","AB+","AB-","O+","O-"];
 
 const SINTOMAS_OPCIONES = [
   "Dolor torácico","Disnea","Palpitaciones","Mareos / síncope",
@@ -80,8 +80,8 @@ const ESTADO_ACTIVE_CLS: Record<EstadoPaciente, string> = {
 
 const FORM_INICIAL: FormPaciente = {
   nombre: "", documento: "", edad: "",
-  telefono: "", estado: "activo",
-  tecnico: "", medico: "",
+  telefono: "", tipoSangre: "", estado: "activo",
+  tecnicoId: "", medicoId: "",
   sintomas: [], descripcionSintomas: "",
   antecedentes: [], antecedentesExtra: "", notas: "",
 };
@@ -290,7 +290,27 @@ export default function NuevoPacientePage() {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [fc,      setFc]      = useState(0);
+  const [tecnicos, setTecnicos] = useState<UsuarioBasico[]>([]);
+  const [medicos,  setMedicos]  = useState<UsuarioBasico[]>([]);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardar, setErrorGuardar] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [resTec, resMed] = await Promise.all([
+          fetch("/api/usuarios?rol=tecnico&activo=true"),
+          fetch("/api/usuarios?rol=medico&activo=true"),
+        ]);
+        if (resTec.ok) setTecnicos(await resTec.json());
+        if (resMed.ok) setMedicos(await resMed.json());
+      } catch {
+        // Sin técnicos/médicos disponibles: los selects quedan vacíos, la
+        // asignación es opcional salvo lo validado en validate().
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (running) {
@@ -311,6 +331,7 @@ export default function NuevoPacientePage() {
     if (!form.nombre.trim())    e.nombre    = "Requerido";
     if (!form.documento.trim()) e.documento = "Requerido";
     if (!form.telefono.trim())  e.telefono  = "Requerido";
+    if (!form.tipoSangre)       e.tipoSangre = "Requerido";
     const edadN = Number(form.edad);
     if (!form.edad.trim() || isNaN(edadN) || edadN < 1 || edadN > 120)
       e.edad = "Ingresa una edad válida (1–120)";
@@ -324,9 +345,98 @@ export default function NuevoPacientePage() {
     window.scrollTo(0, 0);
   }
 
-  function handleRegistrar() {
+  async function handleRegistrar() {
     setRunning(false);
-    router.push("/pacientes");
+    setGuardando(true);
+    setErrorGuardar("");
+
+    try {
+      const resPaciente = await fetch("/api/pacientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre_completo: form.nombre.trim(),
+          documento: form.documento.trim(),
+          edad: Number(form.edad),
+          tipo_sangre: form.tipoSangre,
+          telefono: form.telefono.trim(),
+          estado: form.estado,
+        }),
+      });
+
+      if (!resPaciente.ok) {
+        const data = await resPaciente.json().catch(() => null);
+        setErrorGuardar(data?.detail || "No se pudo registrar el paciente.");
+        setGuardando(false);
+        return;
+      }
+
+      const paciente = await resPaciente.json();
+      const tecnico = tecnicos.find(t => t.id === form.tecnicoId);
+      const medico  = medicos.find(m => m.id === form.medicoId);
+
+      // El estudio es opcional en este punto — si no se asignó técnico, el
+      // paciente igual queda creado y se puede registrar el estudio después
+      // desde su detalle.
+      if (tecnico) {
+        await crearRegistroEcg(paciente.id, tecnico, medico);
+      }
+
+      router.push(`/pacientes/${paciente.id}`);
+    } catch {
+      setErrorGuardar("No se pudo conectar con el servidor.");
+      setGuardando(false);
+    }
+  }
+
+  async function crearRegistroEcg(
+    pacienteId: string,
+    tecnico: UsuarioBasico,
+    medico: UsuarioBasico | undefined,
+  ) {
+    const payloadBase = {
+      tecnico_id: tecnico.id,
+      tecnico_nombre: tecnico.nombre_completo,
+      medico_id: medico?.id ?? null,
+      medico_nombre: medico?.nombre_completo ?? null,
+      sintomas: form.sintomas,
+      descripcion_sintomas: form.descripcionSintomas || null,
+      antecedentes: form.antecedentes,
+      antecedentes_extra: form.antecedentesExtra || null,
+      notas: form.notas || null,
+    };
+
+    const tieneInforme = informe.ritmo.length > 0 || informe.alteraciones.length > 0
+      || informe.fcRegistrada || informe.descripcionHallazgos
+      || informe.diagnostico || informe.diagnosticoSecundario || informe.recomendaciones;
+
+    const payloadConInforme = tieneInforme ? {
+      ...payloadBase,
+      ritmo: informe.ritmo,
+      fc_registrada: informe.fcRegistrada ? Number(informe.fcRegistrada) : null,
+      alteraciones: informe.alteraciones,
+      descripcion_hallazgos: informe.descripcionHallazgos || null,
+      diagnostico: informe.diagnostico || null,
+      diagnostico_secundario: informe.diagnosticoSecundario || null,
+      recomendaciones: informe.recomendaciones || null,
+    } : payloadBase;
+
+    const res = await fetch(`/api/pacientes/${pacienteId}/registros-ecg`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payloadConInforme),
+    });
+
+    // Si el usuario logueado no tiene permiso para incluir el informe
+    // (ej. un técnico sin ecg:revisar), reintentamos sin esa parte para que
+    // el estudio quede guardado como pendiente en vez de perderse.
+    if (res.status === 403 && tieneInforme) {
+      await fetch(`/api/pacientes/${pacienteId}/registros-ecg`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadBase),
+      });
+    }
   }
 
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
@@ -411,15 +521,27 @@ export default function NuevoPacientePage() {
                   </Field>
                 </div>
 
-                <Field label="Teléfono" error={errors.telefono} required>
-                  <input
-                    type="tel"
-                    value={form.telefono}
-                    onChange={e => set("telefono", e.target.value)}
-                    placeholder="Ej. +57 310 234 5678"
-                    className={inputCls(!!errors.telefono)}
-                  />
-                </Field>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Teléfono" error={errors.telefono} required>
+                    <input
+                      type="tel"
+                      value={form.telefono}
+                      onChange={e => set("telefono", e.target.value)}
+                      placeholder="Ej. +57 310 234 5678"
+                      className={inputCls(!!errors.telefono)}
+                    />
+                  </Field>
+                  <Field label="Tipo de sangre" error={errors.tipoSangre} required>
+                    <select
+                      value={form.tipoSangre}
+                      onChange={e => set("tipoSangre", e.target.value)}
+                      className={inputCls(!!errors.tipoSangre)}
+                    >
+                      <option value="">Selecciona…</option>
+                      {TIPOS_SANGRE.map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </Field>
+                </div>
 
                 <Field label="Estado">
                   <div className="flex gap-2">
@@ -448,28 +570,28 @@ export default function NuevoPacientePage() {
               <div className="space-y-3">
                 <Field label="Médico">
                   <select
-                    value={form.medico}
-                    onChange={e => set("medico", e.target.value)}
+                    value={form.medicoId}
+                    onChange={e => set("medicoId", e.target.value)}
                     className={inputCls()}
                   >
                     <option value="">Sin asignar</option>
-                    {MEDICOS.map(m => <option key={m}>{m}</option>)}
+                    {medicos.map(m => <option key={m.id} value={m.id}>{m.nombre_completo}</option>)}
                   </select>
                 </Field>
 
-                {form.tecnico ? (
+                {form.tecnicoId ? (
                   <Field label="Técnico">
                     <div className="flex gap-2">
                       <select
-                        value={form.tecnico}
-                        onChange={e => set("tecnico", e.target.value)}
+                        value={form.tecnicoId}
+                        onChange={e => set("tecnicoId", e.target.value)}
                         className={`${inputCls()} flex-1`}
                       >
-                        {TECNICOS.map(t => <option key={t}>{t}</option>)}
+                        {tecnicos.map(t => <option key={t.id} value={t.id}>{t.nombre_completo}</option>)}
                       </select>
                       <button
                         type="button"
-                        onClick={() => set("tecnico", "")}
+                        onClick={() => set("tecnicoId", "")}
                         className="rounded-xl border border-gray-200 px-3 text-xs text-gray-400
                                    transition-colors hover:border-red-200 hover:text-red-400"
                       >
@@ -480,13 +602,14 @@ export default function NuevoPacientePage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => set("tecnico", TECNICOS[0])}
+                    disabled={tecnicos.length === 0}
+                    onClick={() => set("tecnicoId", tecnicos[0]?.id ?? "")}
                     className="flex items-center gap-2 rounded-xl border border-dashed border-gray-300
                                px-4 py-2.5 text-xs font-medium text-gray-400 transition-colors
-                               hover:border-blue-400 hover:text-blue-500"
+                               hover:border-blue-400 hover:text-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <span className="text-base leading-none">+</span>
-                    Asignar técnico
+                    {tecnicos.length === 0 ? "Sin técnicos disponibles" : "Asignar técnico"}
                   </button>
                 )}
               </div>
@@ -842,13 +965,16 @@ export default function NuevoPacientePage() {
             </section>
 
             {/* Guardar */}
-            <div className="flex justify-end pb-10">
+            <div className="flex flex-col items-end gap-2 pb-10">
+              {errorGuardar && <p className="text-xs text-red-500">{errorGuardar}</p>}
               <button
                 onClick={handleRegistrar}
-                className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white
-                           transition-colors hover:bg-blue-700"
+                disabled={guardando}
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold
+                           text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Guardar informe y finalizar
+                {guardando && <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />}
+                {guardando ? "Guardando…" : "Guardar informe y finalizar"}
               </button>
             </div>
 

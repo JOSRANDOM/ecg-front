@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ClipboardList, Activity, Play, Square, FileText } from "lucide-react";
-import { getPaciente } from "../../_data";
+import { ArrowLeft, ClipboardList, Activity, Play, Square, FileText, Loader2 } from "lucide-react";
+import type { Paciente, UsuarioBasico } from "../../_types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -39,8 +39,8 @@ const ALTERACIONES_ECG_OPCIONES = [
 ];
 
 interface FormEstudio {
-  tecnico:             string;
-  medico:              string;
+  tecnicoId:           string;
+  medicoId:            string;
   sintomas:            string[];
   descripcionSintomas: string;
   antecedentes:        string[];
@@ -51,13 +51,10 @@ interface FormEstudio {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const FORM_INICIAL: FormEstudio = {
-  tecnico: "Sofía Restrepo", medico: "",
+  tecnicoId: "", medicoId: "",
   sintomas: [], descripcionSintomas: "",
   antecedentes: [], antecedentesExtra: "", notas: "",
 };
-
-const TECNICOS = ["Sofía Restrepo", "Andrés Mora"];
-const MEDICOS  = ["Dr. Ricardo Montoya", "Dr. Camila Vásquez"];
 
 const SINTOMAS_OPCIONES = [
   "Dolor torácico", "Disnea", "Palpitaciones", "Mareos / síncope",
@@ -271,15 +268,41 @@ function EcgCanvas({
 export default function NuevoEstudioPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const paciente = getPaciente(id);
 
+  const [paciente,  setPaciente]  = useState<Paciente | null>(null);
+  const [cargando,  setCargando]  = useState(true);
   const [tab,       setTab]       = useState<Tab>("datos");
   const [informe,   setInforme]   = useState<FormInforme>(INFORME_INICIAL);
   const [form,      setForm]      = useState<FormEstudio>(FORM_INICIAL);
   const [running,   setRunning]   = useState(false);
   const [elapsed,   setElapsed]   = useState(0);
   const [fc,        setFc]        = useState(0);
+  const [tecnicos,  setTecnicos]  = useState<UsuarioBasico[]>([]);
+  const [medicos,   setMedicos]   = useState<UsuarioBasico[]>([]);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardar, setErrorGuardar] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [resPaciente, resTec, resMed] = await Promise.all([
+          fetch(`/api/pacientes/${id}`),
+          fetch("/api/usuarios?rol=tecnico&activo=true"),
+          fetch("/api/usuarios?rol=medico&activo=true"),
+        ]);
+        if (resPaciente.ok) setPaciente(await resPaciente.json());
+        if (resTec.ok) {
+          const lista: UsuarioBasico[] = await resTec.json();
+          setTecnicos(lista);
+          if (lista.length > 0) setForm(prev => ({ ...prev, tecnicoId: lista[0].id }));
+        }
+        if (resMed.ok) setMedicos(await resMed.json());
+      } finally {
+        setCargando(false);
+      }
+    })();
+  }, [id]);
 
   useEffect(() => {
     if (running) {
@@ -300,13 +323,85 @@ export default function NuevoEstudioPage() {
     setRunning(true);
   }
 
-  function handleRegistrar() {
+  async function handleRegistrar() {
     setRunning(false);
-    router.push(`/pacientes/${id}`);
+    const tecnico = tecnicos.find(t => t.id === form.tecnicoId);
+    if (!tecnico) {
+      setErrorGuardar("Selecciona un técnico responsable del estudio.");
+      setTab("datos");
+      return;
+    }
+    const medico = medicos.find(m => m.id === form.medicoId);
+
+    setGuardando(true);
+    setErrorGuardar("");
+
+    const payloadBase = {
+      tecnico_id: tecnico.id,
+      tecnico_nombre: tecnico.nombre_completo,
+      medico_id: medico?.id ?? null,
+      medico_nombre: medico?.nombre_completo ?? null,
+      sintomas: form.sintomas,
+      descripcion_sintomas: form.descripcionSintomas || null,
+      antecedentes: form.antecedentes,
+      antecedentes_extra: form.antecedentesExtra || null,
+      notas: form.notas || null,
+    };
+
+    const tieneInforme = informe.ritmo.length > 0 || informe.alteraciones.length > 0
+      || informe.fcRegistrada || informe.descripcionHallazgos
+      || informe.diagnostico || informe.diagnosticoSecundario || informe.recomendaciones;
+
+    const payload = tieneInforme ? {
+      ...payloadBase,
+      ritmo: informe.ritmo,
+      fc_registrada: informe.fcRegistrada ? Number(informe.fcRegistrada) : null,
+      alteraciones: informe.alteraciones,
+      descripcion_hallazgos: informe.descripcionHallazgos || null,
+      diagnostico: informe.diagnostico || null,
+      diagnostico_secundario: informe.diagnosticoSecundario || null,
+      recomendaciones: informe.recomendaciones || null,
+    } : payloadBase;
+
+    try {
+      let res = await fetch(`/api/pacientes/${id}/registros-ecg`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      // Sin permiso para incluir el informe (ej. técnico sin ecg:revisar):
+      // reintentar sin esa parte, el estudio queda pendiente de revisión.
+      if (res.status === 403 && tieneInforme) {
+        res = await fetch(`/api/pacientes/${id}/registros-ecg`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadBase),
+        });
+      }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setErrorGuardar(data?.detail || "No se pudo guardar el estudio.");
+        setGuardando(false);
+        return;
+      }
+
+      router.push(`/pacientes/${id}`);
+    } catch {
+      setErrorGuardar("No se pudo conectar con el servidor.");
+      setGuardando(false);
+    }
   }
 
   const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
   const ss = String(elapsed % 60).padStart(2, "0");
+
+  if (cargando) return (
+    <main className="flex flex-1 items-center justify-center bg-white">
+      <Loader2 className="h-6 w-6 animate-spin text-gray-300" strokeWidth={1.75} />
+    </main>
+  );
 
   if (!paciente) return (
     <main className="flex flex-1 items-center justify-center bg-white">
@@ -329,7 +424,7 @@ export default function NuevoEstudioPage() {
         <div className="h-4 w-px bg-gray-200" />
         <p className="text-xs text-gray-400">
           Nuevo estudio —{" "}
-          <span className="font-semibold text-gray-800">{paciente.nombre}</span>
+          <span className="font-semibold text-gray-800">{paciente.nombre_completo}</span>
         </p>
 
         {/* Tab switcher */}
@@ -366,24 +461,30 @@ export default function NuevoEstudioPage() {
                 Asignación
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                {(["tecnico", "medico"] as const).map(key => (
-                  <div key={key}>
-                    <label className="mb-1.5 block text-xs font-medium text-gray-600 capitalize">
-                      {key === "tecnico" ? "Técnico" : "Médico"}
-                    </label>
-                    <select
-                      value={form[key]}
-                      onChange={e => setField(key, e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
-                                 text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white"
-                    >
-                      {key === "medico" && <option value="">Sin asignar</option>}
-                      {(key === "tecnico" ? TECNICOS : MEDICOS).map(v => (
-                        <option key={v}>{v}</option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-600">Técnico</label>
+                  <select
+                    value={form.tecnicoId}
+                    onChange={e => setField("tecnicoId", e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
+                               text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white"
+                  >
+                    {tecnicos.length === 0 && <option value="">Sin técnicos disponibles</option>}
+                    {tecnicos.map(t => <option key={t.id} value={t.id}>{t.nombre_completo}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-600">Médico</label>
+                  <select
+                    value={form.medicoId}
+                    onChange={e => setField("medicoId", e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
+                               text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white"
+                  >
+                    <option value="">Sin asignar</option>
+                    {medicos.map(m => <option key={m.id} value={m.id}>{m.nombre_completo}</option>)}
+                  </select>
+                </div>
               </div>
             </section>
 
@@ -489,9 +590,9 @@ export default function NuevoEstudioPage() {
               <div className="h-8 w-px bg-[#0d2a0d]" />
               {/* Patient */}
               <div>
-                <p className="font-mono text-[11px] text-green-400">{paciente.nombre}</p>
+                <p className="font-mono text-[11px] text-green-400">{paciente.nombre_completo}</p>
                 <p className="font-mono text-[10px] text-green-700">
-                  {paciente.documento} · {paciente.edad} años · {paciente.tipoSangre}
+                  {paciente.documento} · {paciente.edad} años · {paciente.tipo_sangre}
                 </p>
               </div>
               {/* Speed / gain */}
@@ -777,13 +878,16 @@ export default function NuevoEstudioPage() {
             </section>
 
             {/* Guardar */}
-            <div className="flex justify-end pb-10">
+            <div className="flex flex-col items-end gap-2 pb-10">
+              {errorGuardar && <p className="text-xs text-red-500">{errorGuardar}</p>}
               <button
                 onClick={handleRegistrar}
-                className="rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white
-                           transition-colors hover:bg-blue-700"
+                disabled={guardando}
+                className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold
+                           text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Guardar informe y finalizar
+                {guardando && <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />}
+                {guardando ? "Guardando…" : "Guardar informe y finalizar"}
               </button>
             </div>
 
