@@ -17,6 +17,17 @@ function formatFecha(iso: string) {
   });
 }
 
+const MESES_CORTOS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+/** Los últimos `cantidad` meses (incluido el actual), del más antiguo al más
+ * reciente — para que el eje X del gráfico se lea en orden cronológico. */
+function ultimosMeses(cantidad: number, ahora: Date) {
+  return Array.from({ length: cantidad }, (_, i) => {
+    const d = new Date(ahora.getFullYear(), ahora.getMonth() - (cantidad - 1 - i), 1);
+    return { anio: d.getFullYear(), mesIndex: d.getMonth(), label: MESES_CORTOS[d.getMonth()] };
+  });
+}
+
 interface RegistroConPaciente extends RegistroEcg {
   paciente_nombre: string;
 }
@@ -60,14 +71,13 @@ export default async function Home() {
   ).length;
   const recientes        = todos.slice(0, 6);
 
-  const chartData = [
-    { mes: "Dic", estudios: 1 },
-    { mes: "Ene", estudios: 2 },
-    { mes: "Feb", estudios: 3 },
-    { mes: "Mar", estudios: 3 },
-    { mes: "Abr", estudios: 2 },
-    { mes: "May", estudios: 3 },
-  ];
+  const chartData = ultimosMeses(6, new Date()).map(({ anio, mesIndex, label }) => ({
+    mes: label,
+    estudios: todos.filter((r) => {
+      const fecha = new Date(r.fecha);
+      return fecha.getFullYear() === anio && fecha.getMonth() === mesIndex;
+    }).length,
+  }));
 
   return (
     <main className="flex-1 bg-gray-50 dark:bg-gray-950 p-6">
