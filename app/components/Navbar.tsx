@@ -4,6 +4,7 @@ import NavDrawer from "./NavDrawer";
 import LogoutButton from "./LogoutButton";
 import ThemeToggle from "./ThemeToggle";
 import SearchTrigger from "./SearchTrigger";
+import NotificationBadge from "./NotificationBadge";
 
 interface Props {
   etiqueta: string;
@@ -27,6 +28,7 @@ export default function Navbar({ etiqueta, permisos }: Props) {
         </span>
         <div className="ml-auto flex items-center gap-2">
           <SearchTrigger />
+          <NotificationBadge permisos={permisos} />
           <ThemeToggle />
           <LogoutButton variant="icon" />
         </div>

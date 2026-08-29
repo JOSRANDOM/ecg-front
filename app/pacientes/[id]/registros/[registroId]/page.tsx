@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileHeart, CheckCircle2, Clock, Loader2,
-  Stethoscope, ClipboardList, HeartPulse,
+  Stethoscope, ClipboardList, HeartPulse, Stamp,
 } from "lucide-react";
 import {
   type EstadoEcg, type Paciente, type RegistroEcg,
@@ -67,6 +67,7 @@ export default function RegistroDetallePage() {
   const [paciente, setPaciente] = useState<Paciente | null>(null);
   const [registro, setRegistro] = useState<RegistroEcg | null>(null);
   const [revisorNombre, setRevisorNombre] = useState<string | null>(null);
+  const [puedeRevisar, setPuedeRevisar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -108,6 +109,12 @@ export default function RegistroDetallePage() {
         if (!cancelado) setLoading(false);
       }
     })();
+    fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((sesion) => {
+        if (!cancelado && sesion) setPuedeRevisar(sesion.permisos?.includes("ecg:revisar") ?? false);
+      })
+      .catch(() => {});
     return () => { cancelado = true; };
   }, [id, registroId]);
 
@@ -192,10 +199,20 @@ export default function RegistroDetallePage() {
 
         <Seccion icon={HeartPulse} titulo="Informe">
           {registro.estado === "pendiente" ? (
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 flex flex-col items-start gap-3">
               <p className="text-sm text-gray-400 dark:text-gray-500">
                 Este estudio aún no tiene informe — está pendiente de revisión por un médico.
               </p>
+              {puedeRevisar && (
+                <button
+                  onClick={() => router.push(`/pacientes/${id}/registros/${registroId}/revisar`)}
+                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold
+                             text-white transition-colors hover:bg-blue-700"
+                >
+                  <Stamp className="h-3.5 w-3.5" strokeWidth={2} />
+                  Revisar ahora
+                </button>
+              )}
             </div>
           ) : (
             <>
