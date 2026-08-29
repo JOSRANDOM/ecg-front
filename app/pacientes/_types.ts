@@ -57,6 +57,22 @@ export interface UsuarioBasico {
   activo: boolean;
 }
 
+/** Foto/PDF de un ECG en papel subido manualmente (fuera del flujo
+ * estructurado de RegistroEcg) — ver GET/POST /api/pacientes/{id}/imagenes-ecg.
+ * `url` es una signed URL de Supabase Storage con vigencia de 1h, resuelta
+ * en cada request — no se persiste ni se cachea en el cliente. */
+export interface ImagenEcg {
+  id: string;
+  paciente_id: string;
+  fecha: string; // "YYYY-MM-DD"
+  nombre_archivo: string;
+  tipo_archivo: string;
+  tamano_bytes: number;
+  subido_por_nombre: string;
+  creado_en: string;
+  url: string;
+}
+
 /** Color de avatar determinístico a partir de un id — funciona igual con
  * los ids numéricos del mock viejo que con uuids reales (a diferencia de
  * `parseInt(id) % n`, que con un uuid da NaN o solo lee sus primeros

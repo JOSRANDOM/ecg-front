@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Home, Users, Settings2, Activity, UserCog, CircleUser, ShieldCheck } from "lucide-react";
+import { Menu, X, Home, Users, Settings2, Activity, UserCog, CircleUser, ShieldCheck, Search } from "lucide-react";
 import LogoutButton from "./LogoutButton";
 
 interface Props {
@@ -97,6 +97,17 @@ export default function NavDrawer({ permisos }: Props) {
           >
             <Users className="h-4 w-4 flex-shrink-0" strokeWidth={1.75} />
             Pacientes
+          </Link>
+
+          {/* Buscar ECG — imágenes manuales, ver ecg:leer en el JWT del rol */}
+          <Link
+            href="/archivo-ecg"
+            onClick={close}
+            className="flex w-full items-center gap-3 rounded-xl bg-amber-600 px-4 py-3
+                       text-sm font-medium text-white transition-colors hover:bg-amber-700"
+          >
+            <Search className="h-4 w-4 flex-shrink-0" strokeWidth={1.75} />
+            Buscar ECG
           </Link>
 
           {/* Usuarios */}

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileHeart, User, Phone, Droplets,
-  CheckCircle2, Clock, Loader2, ChevronRight, Plus,
+  CheckCircle2, Clock, Loader2, ChevronRight, Plus, UploadCloud,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line,
@@ -187,6 +187,14 @@ export default function PacienteDetallePage() {
             <span className="rounded-full bg-gray-50 dark:bg-gray-800 px-2.5 py-1 text-[11px] text-gray-400 dark:text-gray-500">
               {registros.length} registro{registros.length !== 1 ? "s" : ""}
             </span>
+            <button
+              onClick={() => router.push(`/pacientes/${id}/subir-ecg-manual`)}
+              className="flex h-7 w-7 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800
+                         text-gray-500 dark:text-gray-400 shadow-sm transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+              title="Subir ECG manual"
+            >
+              <UploadCloud className="h-3.5 w-3.5" strokeWidth={2} />
+            </button>
             <button
               onClick={() => router.push(`/pacientes/${id}/nuevo-estudio`)}
               className="flex h-7 w-7 items-center justify-center rounded-xl bg-blue-600
