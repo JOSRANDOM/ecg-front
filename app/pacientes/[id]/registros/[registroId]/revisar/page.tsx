@@ -63,6 +63,7 @@ export default function RevisarRegistroPage() {
   const [diagnostico, setDiagnostico] = useState("");
   const [diagnosticoSecundario, setDiagnosticoSecundario] = useState("");
   const [recomendaciones, setRecomendaciones] = useState("");
+  const [proximoControl, setProximoControl] = useState("");
 
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
@@ -96,6 +97,7 @@ export default function RevisarRegistroPage() {
         setDiagnostico(dataRegistro.diagnostico ?? "");
         setDiagnosticoSecundario(dataRegistro.diagnostico_secundario ?? "");
         setRecomendaciones(dataRegistro.recomendaciones ?? "");
+        setProximoControl(dataRegistro.proximo_control ?? "");
 
         const resUsuario = await fetch(`/api/usuarios/${sesion.usuarioId}`);
         if (resUsuario.ok && !cancelado) {
@@ -130,6 +132,7 @@ export default function RevisarRegistroPage() {
           diagnostico: diagnostico || null,
           diagnostico_secundario: diagnosticoSecundario || null,
           recomendaciones: recomendaciones || null,
+          proximo_control: proximoControl || null,
           medico_id: medico?.id ?? null,
           medico_nombre: medico?.nombre_completo ?? null,
         }),
@@ -263,6 +266,20 @@ export default function RevisarRegistroPage() {
                 rows={2}
                 value={recomendaciones}
                 onChange={(e) => setRecomendaciones(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800
+                           px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 outline-none transition
+                           focus:border-blue-400 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20"
+              />
+            </div>
+
+            <div className="max-w-[200px]">
+              <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">
+                Próximo control (opcional)
+              </label>
+              <input
+                type="date"
+                value={proximoControl}
+                onChange={(e) => setProximoControl(e.target.value)}
                 className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800
                            px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 outline-none transition
                            focus:border-blue-400 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20"

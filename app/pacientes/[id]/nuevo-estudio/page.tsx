@@ -17,12 +17,13 @@ interface FormInforme {
   diagnostico:          string;
   diagnosticoSecundario:string;
   recomendaciones:      string;
+  proximoControl:       string;
 }
 
 const INFORME_INICIAL: FormInforme = {
   ritmo: [], fcRegistrada: "", alteraciones: [],
   descripcionHallazgos: "", diagnostico: "",
-  diagnosticoSecundario: "", recomendaciones: "",
+  diagnosticoSecundario: "", recomendaciones: "", proximoControl: "",
 };
 
 const RITMO_OPCIONES = [
@@ -361,6 +362,7 @@ export default function NuevoEstudioPage() {
       diagnostico: informe.diagnostico || null,
       diagnostico_secundario: informe.diagnosticoSecundario || null,
       recomendaciones: informe.recomendaciones || null,
+      proximo_control: informe.proximoControl || null,
     } : payloadBase;
 
     try {
@@ -888,6 +890,22 @@ export default function NuevoEstudioPage() {
                            text-sm text-gray-700 placeholder:text-gray-300 outline-none
                            focus:border-blue-400 focus:bg-white
                            dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
+              />
+            </section>
+
+            {/* Próximo control */}
+            <section>
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                Próximo control (opcional)
+              </h3>
+              <input
+                type="date"
+                value={informe.proximoControl}
+                onChange={e => setInforme(prev => ({ ...prev, proximoControl: e.target.value }))}
+                className="w-full max-w-[200px] rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
+                           text-sm text-gray-700 outline-none
+                           focus:border-blue-400 focus:bg-white
+                           dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:bg-gray-900"
               />
             </section>
 

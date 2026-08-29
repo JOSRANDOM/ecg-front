@@ -44,8 +44,29 @@ export interface RegistroEcg {
   recomendaciones: string | null;
   revisado_por: string | null;
   revisado_en: string | null;
+  proximo_control: string | null;
   creado_en: string;
   actualizado_en: string;
+}
+
+/** Snapshot histórico de un informe antes de ser corregido — ver
+ * GET /api/registros-ecg/{id}/versiones. */
+export interface VersionInforme {
+  id: string;
+  registro_ecg_id: string;
+  version: number;
+  ritmo: string[];
+  fc_registrada: number | null;
+  alteraciones: string[];
+  descripcion_hallazgos: string | null;
+  diagnostico: string | null;
+  diagnostico_secundario: string | null;
+  recomendaciones: string | null;
+  medico_id: string | null;
+  medico_nombre: string | null;
+  reemplazado_por: string;
+  reemplazado_por_nombre: string;
+  creado_en: string;
 }
 
 /** Recorte de UsuarioResponse (usuarios-service) usado para los selectores

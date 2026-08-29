@@ -1,4 +1,5 @@
-import { Users, Activity, Clock, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { Users, Activity, Clock, CheckCircle, CalendarClock } from "lucide-react";
 import { fetchPacientesService } from "@/lib/pacientesService";
 import type { EstadoEcg, Paciente, RegistroEcg } from "./pacientes/_types";
 import DashboardChart from "./components/DashboardChart";
@@ -18,6 +19,15 @@ function formatFecha(iso: string) {
 }
 
 const MESES_CORTOS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+/** Para fechas puras "YYYY-MM-DD" (sin hora, ej. proximo_control) —
+ * `new Date(iso)` las interpreta como UTC medianoche y puede desfasar un día
+ * al formatear en una zona horaria negativa, así que se parsean a mano en
+ * vez de reusar `formatFecha` (pensado para timestamps con hora). */
+function formatFechaSolo(fecha: string) {
+  const [y, m, d] = fecha.split("-").map(Number);
+  return `${d} ${MESES_CORTOS[m - 1]}. ${y}`;
+}
 
 /** Los últimos `cantidad` meses (incluido el actual), del más antiguo al más
  * reciente — para que el eje X del gráfico se lea en orden cronológico. */
@@ -78,6 +88,18 @@ export default async function Home() {
       return fecha.getFullYear() === anio && fecha.getMonth() === mesIndex;
     }).length,
   }));
+
+  // Vencidos o dentro de los próximos 30 días — más urgente primero.
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const limiteControles = new Date(hoy);
+  limiteControles.setDate(limiteControles.getDate() + 30);
+
+  const proximosControles = todos
+    .filter((r) => r.proximo_control)
+    .map((r) => ({ ...r, fechaControl: new Date(`${r.proximo_control}T00:00:00`) }))
+    .filter((r) => r.fechaControl <= limiteControles)
+    .sort((a, b) => a.fechaControl.getTime() - b.fechaControl.getTime());
 
   return (
     <main className="flex-1 bg-gray-50 dark:bg-gray-950 p-6">
@@ -161,6 +183,42 @@ export default async function Home() {
                 );
               })}
             </div>
+          </div>
+        </div>
+
+        {/* Próximos controles */}
+        <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+          <div className="px-5 pt-5 pb-3">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Próximos controles</h3>
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">Vencidos o dentro de los próximos 30 días</p>
+          </div>
+          <div className="divide-y divide-gray-50 dark:divide-gray-800">
+            {proximosControles.length === 0 ? (
+              <p className="px-5 pb-5 text-xs text-gray-400 dark:text-gray-500">Sin controles pendientes en este rango.</p>
+            ) : proximosControles.map((r) => {
+              const vencido = r.fechaControl < hoy;
+              return (
+                <Link
+                  key={r.id}
+                  href={`/pacientes/${r.paciente_id}`}
+                  className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl
+                                   ${vencido ? "bg-red-50 dark:bg-red-500/10" : "bg-blue-50 dark:bg-blue-500/10"}`}>
+                    <CalendarClock className={`h-4 w-4 ${vencido ? "text-red-500 dark:text-red-400" : "text-blue-500 dark:text-blue-400"}`} strokeWidth={1.75} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-800 dark:text-gray-100">{r.paciente_nombre}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">Control: {formatFechaSolo(r.proximo_control as string)}</p>
+                  </div>
+                  {vencido && (
+                    <span className="shrink-0 rounded-full bg-red-50 dark:bg-red-500/10 px-2.5 py-0.5 text-[11px] font-medium text-red-600 dark:text-red-400">
+                      Vencido
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>

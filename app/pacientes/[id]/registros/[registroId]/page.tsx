@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import {
   ArrowLeft, FileHeart, CheckCircle2, Clock, Loader2,
   Stethoscope, ClipboardList, HeartPulse, Stamp, Printer,
+  CalendarClock, History, ChevronDown,
 } from "lucide-react";
 import {
-  type EstadoEcg, type Paciente, type RegistroEcg,
+  type EstadoEcg, type Paciente, type RegistroEcg, type VersionInforme,
 } from "../../../_types";
 
 const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
@@ -16,6 +17,11 @@ function formatFechaHora(iso: string) {
   const [fecha, hora] = iso.split("T");
   const [y, m, d] = fecha.split("-").map(Number);
   return `${d} ${MESES[m - 1]}. ${y} · ${(hora ?? "").slice(0, 5)}`;
+}
+
+function formatFecha(fecha: string) {
+  const [y, m, d] = fecha.split("-").map(Number);
+  return `${d} ${MESES[m - 1]}. ${y}`;
 }
 
 const ESTADO_ECG: Record<EstadoEcg, { label: string; cls: string; icon: React.ElementType }> = {
@@ -47,13 +53,14 @@ function Campo({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function Seccion({
-  icon: Icon, titulo, children,
-}: { icon: React.ElementType; titulo: string; children: React.ReactNode }) {
+  icon: Icon, titulo, accion, children,
+}: { icon: React.ElementType; titulo: string; accion?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
         <Icon className="h-4 w-4 text-blue-500 dark:text-blue-400" strokeWidth={1.75} />
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{titulo}</h2>
+        {accion && <div className="ml-auto">{accion}</div>}
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
     </div>
@@ -141,6 +148,9 @@ function ReporteImprimible({
             {registro.recomendaciones && (
               <div className="col-span-2"><CampoImpreso label="Recomendaciones" valor={registro.recomendaciones} /></div>
             )}
+            {registro.proximo_control && (
+              <CampoImpreso label="Próximo control" valor={formatFecha(registro.proximo_control)} />
+            )}
           </div>
         )}
       </div>
@@ -174,6 +184,8 @@ export default function RegistroDetallePage() {
   const [puedeRevisar, setPuedeRevisar] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [versiones, setVersiones] = useState<VersionInforme[]>([]);
+  const [historialAbierto, setHistorialAbierto] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -218,6 +230,10 @@ export default function RegistroDetallePage() {
       .then((sesion) => {
         if (!cancelado && sesion) setPuedeRevisar(sesion.permisos?.includes("ecg:revisar") ?? false);
       })
+      .catch(() => {});
+    fetch(`/api/registros-ecg/${registroId}/versiones`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => { if (!cancelado) setVersiones(Array.isArray(data) ? data : []); })
       .catch(() => {});
     return () => { cancelado = true; };
   }, [id, registroId]);
@@ -315,7 +331,21 @@ export default function RegistroDetallePage() {
           )}
         </Seccion>
 
-        <Seccion icon={HeartPulse} titulo="Informe">
+        <Seccion
+          icon={HeartPulse}
+          titulo="Informe"
+          accion={registro.estado !== "pendiente" && puedeRevisar ? (
+            <button
+              onClick={() => router.push(`/pacientes/${id}/registros/${registroId}/revisar`)}
+              className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700
+                         px-3 py-1 text-[11px] font-medium text-gray-500 dark:text-gray-400 transition-colors
+                         hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              <Stamp className="h-3 w-3" strokeWidth={2} />
+              Corregir informe
+            </button>
+          ) : undefined}
+        >
           {registro.estado === "pendiente" ? (
             <div className="sm:col-span-2 flex flex-col items-start gap-3">
               <p className="text-sm text-gray-400 dark:text-gray-500">
@@ -353,6 +383,14 @@ export default function RegistroDetallePage() {
                   <Campo label="Recomendaciones">{registro.recomendaciones}</Campo>
                 </div>
               )}
+              {registro.proximo_control && (
+                <div className="sm:col-span-2 flex items-center gap-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 px-3 py-2">
+                  <CalendarClock className="h-3.5 w-3.5 text-blue-500 dark:text-blue-400" strokeWidth={1.75} />
+                  <span className="text-xs text-blue-600 dark:text-blue-400">
+                    Próximo control: {formatFecha(registro.proximo_control)}
+                  </span>
+                </div>
+              )}
             </>
           )}
         </Seccion>
@@ -363,6 +401,45 @@ export default function RegistroDetallePage() {
             {revisorNombre ?? registro.medico_nombre
               ? `Revisado por ${revisorNombre ?? registro.medico_nombre}`
               : "Revisado"} · {formatFechaHora(registro.revisado_en)}
+          </div>
+        )}
+
+        {versiones.length > 0 && (
+          <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
+            <button
+              onClick={() => setHistorialAbierto((v) => !v)}
+              className="flex w-full items-center gap-2 px-5 py-4 text-left"
+            >
+              <History className="h-4 w-4 text-gray-400 dark:text-gray-500" strokeWidth={1.75} />
+              <h2 className="flex-1 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                Historial de revisiones ({versiones.length})
+              </h2>
+              <ChevronDown
+                className={`h-4 w-4 text-gray-400 dark:text-gray-500 transition-transform ${historialAbierto ? "rotate-180" : ""}`}
+                strokeWidth={1.75}
+              />
+            </button>
+
+            {historialAbierto && (
+              <div className="space-y-3 border-t border-gray-50 dark:border-gray-800 px-5 py-4">
+                {versiones.map((v) => (
+                  <div key={v.id} className="rounded-xl bg-gray-50 dark:bg-gray-800 p-3">
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500">
+                      Versión {v.version} · reemplazada por <span className="font-medium text-gray-600 dark:text-gray-300">{v.reemplazado_por_nombre}</span> · {formatFechaHora(v.creado_en)}
+                    </p>
+                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <Campo label="Diagnóstico">{v.diagnostico ?? <span className="text-gray-300 dark:text-gray-600">—</span>}</Campo>
+                      <Campo label="Frecuencia cardíaca">
+                        {v.fc_registrada != null ? `${v.fc_registrada} lpm` : <span className="text-gray-300 dark:text-gray-600">—</span>}
+                      </Campo>
+                      {v.descripcion_hallazgos && (
+                        <div className="sm:col-span-2"><Campo label="Hallazgos">{v.descripcion_hallazgos}</Campo></div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
