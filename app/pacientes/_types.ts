@@ -62,11 +62,11 @@ export interface UsuarioBasico {
  * `parseInt(id) % n`, que con un uuid da NaN o solo lee sus primeros
  * dígitos). */
 const AVATAR_COLORS = [
-  "bg-blue-100 text-blue-700",
-  "bg-violet-100 text-violet-700",
-  "bg-teal-100 text-teal-700",
-  "bg-rose-100 text-rose-700",
-  "bg-amber-100 text-amber-700",
+  "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
+  "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400",
+  "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400",
+  "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400",
+  "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400",
 ];
 
 export function avatarColor(id: string): string {

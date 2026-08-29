@@ -17,7 +17,7 @@ export default function LogoutButton({ variant = "icon" }: { variant?: "icon" | 
       <button
         onClick={handleLogout}
         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-500
-                   transition-colors hover:bg-red-50 hover:text-red-600"
+                   transition-colors hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-500/10 dark:hover:text-red-400"
       >
         <LogOut className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
         Cerrar sesión
@@ -29,7 +29,7 @@ export default function LogoutButton({ variant = "icon" }: { variant?: "icon" | 
     <button
       onClick={handleLogout}
       title="Cerrar sesión"
-      className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500"
+      className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-red-500 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-red-400"
     >
       <LogOut className="h-4 w-4" strokeWidth={1.5} />
     </button>

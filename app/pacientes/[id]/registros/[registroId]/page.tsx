@@ -19,17 +19,17 @@ function formatFechaHora(iso: string) {
 }
 
 const ESTADO_ECG: Record<EstadoEcg, { label: string; cls: string; icon: React.ElementType }> = {
-  revisado:   { label: "Revisado",   cls: "bg-green-50 text-green-700",   icon: CheckCircle2 },
-  pendiente:  { label: "Pendiente",  cls: "bg-yellow-50 text-yellow-700", icon: Clock        },
-  en_proceso: { label: "En proceso", cls: "bg-blue-50 text-blue-600",     icon: Loader2      },
+  revisado:   { label: "Revisado",   cls: "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400",   icon: CheckCircle2 },
+  pendiente:  { label: "Pendiente",  cls: "bg-yellow-50 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400", icon: Clock        },
+  en_proceso: { label: "En proceso", cls: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400",     icon: Loader2      },
 };
 
 function Chips({ items }: { items: string[] }) {
-  if (items.length === 0) return <span className="text-xs text-gray-300">—</span>;
+  if (items.length === 0) return <span className="text-xs text-gray-300 dark:text-gray-600">—</span>;
   return (
     <div className="flex flex-wrap gap-1.5">
       {items.map((item) => (
-        <span key={item} className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] text-gray-600">
+        <span key={item} className="rounded-full bg-gray-100 dark:bg-gray-800 px-2.5 py-0.5 text-[11px] text-gray-600 dark:text-gray-300">
           {item}
         </span>
       ))}
@@ -40,8 +40,8 @@ function Chips({ items }: { items: string[] }) {
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-gray-400">{label}</p>
-      <div className="mt-1 text-sm text-gray-700">{children}</div>
+      <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500">{label}</p>
+      <div className="mt-1 text-sm text-gray-700 dark:text-gray-300">{children}</div>
     </div>
   );
 }
@@ -50,10 +50,10 @@ function Seccion({
   icon: Icon, titulo, children,
 }: { icon: React.ElementType; titulo: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-blue-500" strokeWidth={1.75} />
-        <h2 className="text-sm font-semibold text-gray-900">{titulo}</h2>
+        <Icon className="h-4 w-4 text-blue-500 dark:text-blue-400" strokeWidth={1.75} />
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{titulo}</h2>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">{children}</div>
     </div>
@@ -113,18 +113,18 @@ export default function RegistroDetallePage() {
 
   if (loading) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center bg-white p-6">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-300" strokeWidth={1.75} />
+      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-gray-900 p-6">
+        <Loader2 className="h-6 w-6 animate-spin text-gray-300 dark:text-gray-600" strokeWidth={1.75} />
       </main>
     );
   }
 
   if (notFound || !paciente || !registro) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center bg-white p-6">
-        <p className="text-sm text-gray-400">Registro no encontrado.</p>
+      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-gray-900 p-6">
+        <p className="text-sm text-gray-400 dark:text-gray-500">Registro no encontrado.</p>
         <button onClick={() => router.back()}
-          className="mt-4 text-xs text-blue-500 underline underline-offset-2">
+          className="mt-4 text-xs text-blue-500 dark:text-blue-400 underline underline-offset-2">
           Volver
         </button>
       </main>
@@ -135,12 +135,12 @@ export default function RegistroDetallePage() {
   const Icon = est.icon;
 
   return (
-    <main className="flex flex-1 flex-col bg-gray-50">
-      <div className="border-b border-gray-100 bg-white px-6 py-4">
+    <main className="flex flex-1 flex-col bg-gray-50 dark:bg-gray-950">
+      <div className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-4">
         <button
           onClick={() => router.push(`/pacientes/${id}`)}
-          className="mb-4 flex items-center gap-1.5 text-xs text-gray-400
-                     transition-colors hover:text-gray-700"
+          className="mb-4 flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500
+                     transition-colors hover:text-gray-700 dark:hover:text-gray-300"
         >
           <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
           {paciente.nombre_completo}
@@ -148,10 +148,10 @@ export default function RegistroDetallePage() {
 
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-gray-900">
+            <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-gray-100">
               Electrocardiograma
             </h1>
-            <p className="mt-0.5 text-xs text-gray-400">
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
               {formatFechaHora(registro.fecha)} · {registro.duracion_segundos}s
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function RegistroDetallePage() {
 
         <Seccion icon={Stethoscope} titulo="Asignación">
           <Campo label="Técnico">{registro.tecnico_nombre}</Campo>
-          <Campo label="Médico">{registro.medico_nombre ?? <span className="text-gray-300">Sin médico asignado</span>}</Campo>
+          <Campo label="Médico">{registro.medico_nombre ?? <span className="text-gray-300 dark:text-gray-600">Sin médico asignado</span>}</Campo>
         </Seccion>
 
         <Seccion icon={ClipboardList} titulo="Datos clínicos">
@@ -193,7 +193,7 @@ export default function RegistroDetallePage() {
         <Seccion icon={HeartPulse} titulo="Informe">
           {registro.estado === "pendiente" ? (
             <div className="sm:col-span-2">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-400 dark:text-gray-500">
                 Este estudio aún no tiene informe — está pendiente de revisión por un médico.
               </p>
             </div>
@@ -201,7 +201,7 @@ export default function RegistroDetallePage() {
             <>
               <Campo label="Ritmo"><Chips items={registro.ritmo} /></Campo>
               <Campo label="Frecuencia cardíaca">
-                {registro.fc_registrada != null ? `${registro.fc_registrada} lpm` : <span className="text-gray-300">—</span>}
+                {registro.fc_registrada != null ? `${registro.fc_registrada} lpm` : <span className="text-gray-300 dark:text-gray-600">—</span>}
               </Campo>
               <div className="sm:col-span-2">
                 <Campo label="Alteraciones"><Chips items={registro.alteraciones} /></Campo>
@@ -211,8 +211,8 @@ export default function RegistroDetallePage() {
                   <Campo label="Hallazgos">{registro.descripcion_hallazgos}</Campo>
                 </div>
               )}
-              <Campo label="Diagnóstico">{registro.diagnostico ?? <span className="text-gray-300">—</span>}</Campo>
-              <Campo label="Diagnóstico secundario">{registro.diagnostico_secundario ?? <span className="text-gray-300">—</span>}</Campo>
+              <Campo label="Diagnóstico">{registro.diagnostico ?? <span className="text-gray-300 dark:text-gray-600">—</span>}</Campo>
+              <Campo label="Diagnóstico secundario">{registro.diagnostico_secundario ?? <span className="text-gray-300 dark:text-gray-600">—</span>}</Campo>
               {registro.recomendaciones && (
                 <div className="sm:col-span-2">
                   <Campo label="Recomendaciones">{registro.recomendaciones}</Campo>
@@ -223,7 +223,7 @@ export default function RegistroDetallePage() {
         </Seccion>
 
         {registro.estado === "revisado" && registro.revisado_en && (
-          <div className="flex items-center gap-2 px-1 text-xs text-gray-400">
+          <div className="flex items-center gap-2 px-1 text-xs text-gray-400 dark:text-gray-500">
             <FileHeart className="h-3.5 w-3.5" strokeWidth={1.75} />
             {revisorNombre ?? registro.medico_nombre
               ? `Revisado por ${revisorNombre ?? registro.medico_nombre}`

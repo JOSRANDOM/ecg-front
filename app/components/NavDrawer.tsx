@@ -19,7 +19,7 @@ export default function NavDrawer({ permisos }: Props) {
       {/* Botón hamburguesa */}
       <button
         onClick={() => setOpen(true)}
-        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
         aria-label="Abrir menú"
       >
         <Menu className="h-5 w-5" strokeWidth={1.5} />
@@ -35,19 +35,19 @@ export default function NavDrawer({ permisos }: Props) {
 
       {/* Drawer */}
       <aside
-        className={`fixed left-0 top-0 z-50 flex h-full w-72 flex-col bg-white
+        className={`fixed left-0 top-0 z-50 flex h-full w-72 flex-col bg-white dark:bg-gray-950
                     transition-transform duration-300 ease-in-out
                     ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5">
           <div className="flex items-center gap-2.5">
-            <Activity className="h-5 w-5 text-blue-600" strokeWidth={2} />
-            <span className="text-sm font-semibold tracking-tight text-gray-900">Cardioflow E3</span>
+            <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" strokeWidth={2} />
+            <span className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100">Cardioflow E3</span>
           </div>
           <button
             onClick={close}
-            className="rounded-md p-1 text-gray-400 transition-colors hover:text-gray-700"
+            className="rounded-md p-1 text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300"
             aria-label="Cerrar menú"
           >
             <X className="h-4 w-4" />
@@ -55,7 +55,7 @@ export default function NavDrawer({ permisos }: Props) {
         </div>
 
         <div className="px-6">
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-gray-100 dark:bg-gray-800" />
         </div>
 
         {/* Nav */}
@@ -65,7 +65,7 @@ export default function NavDrawer({ permisos }: Props) {
             href="/"
             onClick={close}
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-500
-                       transition-colors hover:bg-gray-50 hover:text-gray-800"
+                       transition-colors hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
           >
             <Home className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
             Inicio
@@ -76,14 +76,14 @@ export default function NavDrawer({ permisos }: Props) {
             href="/mi-usuario"
             onClick={close}
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-gray-500
-                       transition-colors hover:bg-gray-50 hover:text-gray-800"
+                       transition-colors hover:bg-gray-50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
           >
             <CircleUser className="h-4 w-4 flex-shrink-0" strokeWidth={1.5} />
             Mi usuario
           </Link>
 
           <div className="pt-2 pb-1">
-            <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-gray-300">
+            <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-gray-300 dark:text-gray-600">
               Módulos
             </p>
           </div>
@@ -136,9 +136,9 @@ export default function NavDrawer({ permisos }: Props) {
         </nav>
 
         {/* Footer */}
-        <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+        <div className="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-800">
           <LogoutButton variant="full" />
-          <p className="mt-3 px-3 text-[11px] text-gray-300">CONTEC E3 · v0.1</p>
+          <p className="mt-3 px-3 text-[11px] text-gray-300 dark:text-gray-600">CONTEC E3 · v0.1</p>
         </div>
       </aside>
     </>

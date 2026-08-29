@@ -108,7 +108,7 @@ function ChipGroup({ opciones, seleccionadas, onChange }: {
             className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-colors
               ${active
                 ? "border-blue-500 bg-blue-50 text-blue-600"
-                : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300"
               }`}
           >
             {op}
@@ -398,37 +398,37 @@ export default function NuevoEstudioPage() {
   const ss = String(elapsed % 60).padStart(2, "0");
 
   if (cargando) return (
-    <main className="flex flex-1 items-center justify-center bg-white">
-      <Loader2 className="h-6 w-6 animate-spin text-gray-300" strokeWidth={1.75} />
+    <main className="flex flex-1 items-center justify-center bg-white dark:bg-gray-900">
+      <Loader2 className="h-6 w-6 animate-spin text-gray-300 dark:text-gray-600" strokeWidth={1.75} />
     </main>
   );
 
   if (!paciente) return (
-    <main className="flex flex-1 items-center justify-center bg-white">
-      <p className="text-sm text-gray-400">Paciente no encontrado.</p>
+    <main className="flex flex-1 items-center justify-center bg-white dark:bg-gray-900">
+      <p className="text-sm text-gray-400 dark:text-gray-500">Paciente no encontrado.</p>
     </main>
   );
 
   return (
-    <main className="flex flex-1 flex-col bg-white overflow-hidden">
+    <main className="flex flex-1 flex-col bg-white dark:bg-gray-900 overflow-hidden">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-shrink-0 items-center gap-3 border-b border-gray-100 px-6 py-3">
+      <div className="flex flex-shrink-0 items-center gap-3 border-b border-gray-100 px-6 py-3 dark:border-gray-800">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-gray-700"
+          className="flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300"
         >
           <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
           Volver
         </button>
-        <div className="h-4 w-px bg-gray-200" />
-        <p className="text-xs text-gray-400">
+        <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" />
+        <p className="text-xs text-gray-400 dark:text-gray-500">
           Nuevo estudio —{" "}
-          <span className="font-semibold text-gray-800">{paciente.nombre_completo}</span>
+          <span className="font-semibold text-gray-800 dark:text-gray-100">{paciente.nombre_completo}</span>
         </p>
 
         {/* Tab switcher */}
-        <div className="ml-auto flex rounded-xl bg-gray-100 p-1">
+        <div className="ml-auto flex rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
           {([
             { key: "datos",   label: "Datos clínicos", Icon: ClipboardList },
             { key: "ecg",     label: "Captura ECG",    Icon: Activity      },
@@ -439,8 +439,8 @@ export default function NuevoEstudioPage() {
               onClick={() => setTab(key)}
               className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-colors
                 ${tab === key
-                  ? "bg-white shadow-sm text-gray-800"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-white shadow-sm text-gray-800 dark:bg-gray-900 dark:text-gray-100"
+                  : "text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                 }`}
             >
               <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -457,29 +457,31 @@ export default function NuevoEstudioPage() {
 
             {/* Asignación */}
             <section>
-              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Asignación
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-600">Técnico</label>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Técnico</label>
                   <select
                     value={form.tecnicoId}
                     onChange={e => setField("tecnicoId", e.target.value)}
                     className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
-                               text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white"
+                               text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white
+                               dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:bg-gray-900"
                   >
                     {tecnicos.length === 0 && <option value="">Sin técnicos disponibles</option>}
                     {tecnicos.map(t => <option key={t.id} value={t.id}>{t.nombre_completo}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-600">Médico</label>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Médico</label>
                   <select
                     value={form.medicoId}
                     onChange={e => setField("medicoId", e.target.value)}
                     className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
-                               text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white"
+                               text-sm text-gray-700 outline-none focus:border-blue-400 focus:bg-white
+                               dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:bg-gray-900"
                   >
                     <option value="">Sin asignar</option>
                     {medicos.map(m => <option key={m.id} value={m.id}>{m.nombre_completo}</option>)}
@@ -490,7 +492,7 @@ export default function NuevoEstudioPage() {
 
             {/* Síntomas */}
             <section>
-              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Síntomas actuales
               </h3>
               <ChipGroup
@@ -505,13 +507,14 @@ export default function NuevoEstudioPage() {
                 rows={3}
                 className="mt-3 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
                            text-sm text-gray-700 placeholder:text-gray-300 outline-none
-                           focus:border-blue-400 focus:bg-white"
+                           focus:border-blue-400 focus:bg-white
+                           dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
               />
             </section>
 
             {/* Antecedentes */}
             <section>
-              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Antecedentes médicos
               </h3>
               <ChipGroup
@@ -526,13 +529,14 @@ export default function NuevoEstudioPage() {
                 rows={3}
                 className="mt-3 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
                            text-sm text-gray-700 placeholder:text-gray-300 outline-none
-                           focus:border-blue-400 focus:bg-white"
+                           focus:border-blue-400 focus:bg-white
+                           dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
               />
             </section>
 
             {/* Notas */}
             <section>
-              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Notas del médico
               </h3>
               <textarea
@@ -542,7 +546,8 @@ export default function NuevoEstudioPage() {
                 rows={2}
                 className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
                            text-sm text-gray-700 placeholder:text-gray-300 outline-none
-                           focus:border-blue-400 focus:bg-white"
+                           focus:border-blue-400 focus:bg-white
+                           dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
               />
             </section>
 
@@ -619,14 +624,15 @@ export default function NuevoEstudioPage() {
           </div>
 
           {/* Right sidebar */}
-          <div className="flex w-52 flex-shrink-0 flex-col border-l border-gray-200 bg-gray-50">
+          <div className="flex w-52 flex-shrink-0 flex-col border-l border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
 
             {/* FC channel */}
-            <div className="border-b border-gray-200 p-3">
-              <p className="mb-1.5 text-[10px] font-semibold text-gray-500">
+            <div className="border-b border-gray-200 p-3 dark:border-gray-700">
+              <p className="mb-1.5 text-[10px] font-semibold text-gray-500 dark:text-gray-500">
                 Canal de Frecuencia Cardíaca
               </p>
-              <select className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 outline-none">
+              <select className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 outline-none
+                                 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100">
                 {["V5","V1","V2","V3","V4","V6","I","II"].map(v => (
                   <option key={v}>{v}</option>
                 ))}
@@ -634,17 +640,18 @@ export default function NuevoEstudioPage() {
             </div>
 
             {/* View preferences */}
-            <div className="border-b border-gray-200 p-3 space-y-2">
-              <p className="text-[10px] font-semibold text-gray-500">Ver preferencias</p>
+            <div className="border-b border-gray-200 p-3 space-y-2 dark:border-gray-700">
+              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-500">Ver preferencias</p>
               {[
                 { label: "Estilo",  opts: ["12 Leads 1 Column","12 Leads 2 Column"] },
                 { label: "Speed",   opts: ["25.0 mm/s","50.0 mm/s","12.5 mm/s"] },
                 { label: "Gain",    opts: ["10 mm/mV","20 mm/mV","5 mm/mV"] },
               ].map(({ label, opts }) => (
                 <div key={label}>
-                  <p className="text-[10px] text-gray-500">{label}</p>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-500">{label}</p>
                   <select className="mt-0.5 w-full rounded border border-gray-200 bg-white px-2 py-1
-                                     text-[10px] text-gray-600 outline-none">
+                                     text-[10px] text-gray-600 outline-none
+                                     dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     {opts.map(o => <option key={o}>{o}</option>)}
                   </select>
                 </div>
@@ -652,8 +659,8 @@ export default function NuevoEstudioPage() {
             </div>
 
             {/* Filters */}
-            <div className="border-b border-gray-200 p-3 space-y-1.5">
-              <p className="text-[10px] font-semibold text-gray-500">Configuración de filtro</p>
+            <div className="border-b border-gray-200 p-3 space-y-1.5 dark:border-gray-700">
+              <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-500">Configuración de filtro</p>
               {[
                 { id: "base", label: "Filtro base", def: false },
                 { id: "pf",   label: "Filtro PF",   def: true  },
@@ -665,22 +672,22 @@ export default function NuevoEstudioPage() {
                     defaultChecked={f.def}
                     className="h-3 w-3 accent-blue-500"
                   />
-                  <span className="text-[10px] text-gray-600">{f.label}</span>
+                  <span className="text-[10px] text-gray-600 dark:text-gray-300">{f.label}</span>
                 </label>
               ))}
             </div>
 
             {/* Events table */}
-            <div className="flex-1 overflow-hidden border-b border-gray-200">
-              <div className="grid grid-cols-3 border-b border-gray-200 bg-gray-100">
+            <div className="flex-1 overflow-hidden border-b border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-3 border-b border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
                 {["Evento","Reloj","Tiempo"].map(h => (
-                  <span key={h} className="px-1 py-1 text-center text-[9px] font-semibold text-gray-500">
+                  <span key={h} className="px-1 py-1 text-center text-[9px] font-semibold text-gray-500 dark:text-gray-500">
                     {h}
                   </span>
                 ))}
               </div>
               {running && elapsed >= 3 && (
-                <div className="grid grid-cols-3 px-1 py-1 text-[9px] text-gray-400">
+                <div className="grid grid-cols-3 px-1 py-1 text-[9px] text-gray-400 dark:text-gray-500">
                   <span className="text-center">Inicio</span>
                   <span className="text-center">00:00</span>
                   <span className="text-center">0s</span>
@@ -715,7 +722,8 @@ export default function NuevoEstudioPage() {
                 disabled={running}
                 className="w-full rounded-lg border border-blue-200 bg-blue-50 py-2 text-xs font-semibold
                            text-blue-600 transition-colors hover:bg-blue-100
-                           disabled:cursor-not-allowed disabled:opacity-40"
+                           disabled:cursor-not-allowed disabled:opacity-40
+                           dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
               >
                 Registrar impresión de ECG
               </button>
@@ -723,7 +731,8 @@ export default function NuevoEstudioPage() {
               <button
                 onClick={() => router.back()}
                 className="w-full rounded-lg border border-gray-200 py-2 text-xs font-medium
-                           text-gray-500 transition-colors hover:bg-gray-100"
+                           text-gray-500 transition-colors hover:bg-gray-100
+                           dark:border-gray-700 dark:text-gray-500 dark:hover:bg-gray-800"
               >
                 Salir
               </button>
@@ -740,10 +749,10 @@ export default function NuevoEstudioPage() {
 
             {/* Ritmo */}
             <section>
-              <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Ritmo cardíaco
               </h3>
-              <p className="mb-3 text-[11px] text-gray-400">Seleccione el o los ritmos identificados</p>
+              <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">Seleccione el o los ritmos identificados</p>
               <div className="flex flex-wrap gap-2">
                 {RITMO_OPCIONES.map(op => {
                   const active = informe.ritmo.includes(op);
@@ -756,7 +765,7 @@ export default function NuevoEstudioPage() {
                       className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-colors
                         ${active
                           ? "border-violet-500 bg-violet-50 text-violet-600"
-                          : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                          : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300"
                         }`}
                     >
                       {op}
@@ -768,7 +777,7 @@ export default function NuevoEstudioPage() {
 
             {/* FC registrada */}
             <section>
-              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Frecuencia cardíaca registrada
               </h3>
               <div className="flex items-center gap-3">
@@ -779,18 +788,19 @@ export default function NuevoEstudioPage() {
                   onChange={e => setInforme(prev => ({ ...prev, fcRegistrada: e.target.value }))}
                   placeholder="Ej. 75"
                   className="w-32 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm
-                             text-gray-700 placeholder:text-gray-300 outline-none focus:border-blue-400 focus:bg-white"
+                             text-gray-700 placeholder:text-gray-300 outline-none focus:border-blue-400 focus:bg-white
+                             dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
                 />
-                <span className="text-sm text-gray-400">lpm</span>
+                <span className="text-sm text-gray-400 dark:text-gray-500">lpm</span>
               </div>
             </section>
 
             {/* Alteraciones */}
             <section>
-              <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Hallazgos / Alteraciones
               </h3>
-              <p className="mb-3 text-[11px] text-gray-400">Marque todas las alteraciones encontradas en el trazado</p>
+              <p className="mb-3 text-[11px] text-gray-400 dark:text-gray-500">Marque todas las alteraciones encontradas en el trazado</p>
               <div className="flex flex-wrap gap-2">
                 {ALTERACIONES_ECG_OPCIONES.map(op => {
                   const active = informe.alteraciones.includes(op);
@@ -805,7 +815,7 @@ export default function NuevoEstudioPage() {
                       className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-colors
                         ${active
                           ? "border-rose-400 bg-rose-50 text-rose-600"
-                          : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                          : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300"
                         }`}
                     >
                       {op}
@@ -820,18 +830,19 @@ export default function NuevoEstudioPage() {
                 rows={4}
                 className="mt-4 w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
                            text-sm text-gray-700 placeholder:text-gray-300 outline-none
-                           focus:border-blue-400 focus:bg-white"
+                           focus:border-blue-400 focus:bg-white
+                           dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
               />
             </section>
 
             {/* Diagnóstico */}
             <section>
-              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Diagnóstico
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-600">
+                  <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">
                     Diagnóstico principal
                   </label>
                   <textarea
@@ -841,12 +852,13 @@ export default function NuevoEstudioPage() {
                     rows={3}
                     className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
                                text-sm text-gray-700 placeholder:text-gray-300 outline-none
-                               focus:border-blue-400 focus:bg-white"
+                               focus:border-blue-400 focus:bg-white
+                               dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-600">
-                    Diagnóstico secundario <span className="text-gray-300">(opcional)</span>
+                  <label className="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">
+                    Diagnóstico secundario <span className="text-gray-300 dark:text-gray-600">(opcional)</span>
                   </label>
                   <textarea
                     value={informe.diagnosticoSecundario}
@@ -855,7 +867,8 @@ export default function NuevoEstudioPage() {
                     rows={2}
                     className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
                                text-sm text-gray-700 placeholder:text-gray-300 outline-none
-                               focus:border-blue-400 focus:bg-white"
+                               focus:border-blue-400 focus:bg-white
+                               dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
                   />
                 </div>
               </div>
@@ -863,7 +876,7 @@ export default function NuevoEstudioPage() {
 
             {/* Recomendaciones */}
             <section>
-              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                 Conclusión y recomendaciones
               </h3>
               <textarea
@@ -873,13 +886,14 @@ export default function NuevoEstudioPage() {
                 rows={4}
                 className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5
                            text-sm text-gray-700 placeholder:text-gray-300 outline-none
-                           focus:border-blue-400 focus:bg-white"
+                           focus:border-blue-400 focus:bg-white
+                           dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-600 dark:focus:bg-gray-900"
               />
             </section>
 
             {/* Guardar */}
             <div className="flex flex-col items-end gap-2 pb-10">
-              {errorGuardar && <p className="text-xs text-red-500">{errorGuardar}</p>}
+              {errorGuardar && <p className="text-xs text-red-500 dark:text-red-400">{errorGuardar}</p>}
               <button
                 onClick={handleRegistrar}
                 disabled={guardando}

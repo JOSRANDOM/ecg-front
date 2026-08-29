@@ -260,37 +260,37 @@ export default function RolesPermisosPage() {
 
   if (loading) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center bg-white">
-        <Loader2 className="mb-3 h-6 w-6 animate-spin text-gray-300" />
-        <p className="text-sm text-gray-400">Cargando…</p>
+      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-gray-900">
+        <Loader2 className="mb-3 h-6 w-6 animate-spin text-gray-300 dark:text-gray-600" />
+        <p className="text-sm text-gray-400 dark:text-gray-500">Cargando…</p>
       </main>
     );
   }
 
   if (noAutorizado) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center bg-white px-6 text-center">
-        <ShieldAlert className="mb-3 h-8 w-8 text-gray-200" strokeWidth={1.5} />
-        <p className="text-sm font-medium text-gray-700">No tienes acceso a este módulo</p>
-        <p className="mt-1 text-xs text-gray-400">Roles y permisos es exclusivo del perfil Webmaster.</p>
+      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-gray-900 px-6 text-center">
+        <ShieldAlert className="mb-3 h-8 w-8 text-gray-200 dark:text-gray-600" strokeWidth={1.5} />
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No tienes acceso a este módulo</p>
+        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">Roles y permisos es exclusivo del perfil Webmaster.</p>
       </main>
     );
   }
 
   if (error) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center bg-white px-6 text-center">
-        <p className="text-sm text-gray-400">{error}</p>
+      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-gray-900 px-6 text-center">
+        <p className="text-sm text-gray-400 dark:text-gray-500">{error}</p>
       </main>
     );
   }
 
   return (
-    <main className="flex flex-1 flex-col bg-white">
-      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+    <main className="flex flex-1 flex-col bg-white dark:bg-gray-900">
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-5">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-gray-900">Roles y permisos</h1>
-          <p className="mt-0.5 text-xs text-gray-400">
+          <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Roles y permisos</h1>
+          <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
             Qué puede hacer cada perfil. Marca/desmarca y guarda por columna.
           </p>
         </div>
@@ -310,13 +310,13 @@ export default function RolesPermisosPage() {
         <table className="w-full min-w-[720px] border-separate border-spacing-0 text-sm">
           <thead>
             <tr>
-              <th className="sticky left-0 bg-white px-3 py-2 text-left text-xs font-medium text-gray-400">
+              <th className="sticky left-0 bg-white dark:bg-gray-900 px-3 py-2 text-left text-xs font-medium text-gray-400 dark:text-gray-500">
                 Permiso
               </th>
               {roles.map(rol => (
                 <th key={rol.nombre} className="px-3 py-2 text-center align-bottom">
                   <div className="flex flex-col items-center gap-1.5">
-                    <span className="text-xs font-medium text-gray-700">{rol.etiqueta}</span>
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{rol.etiqueta}</span>
                     <div className="flex items-center gap-1">
                       {hayCambios(rol.nombre) && puedeActualizar && (
                         <button
@@ -335,14 +335,14 @@ export default function RolesPermisosPage() {
                           onClick={() => eliminarRol(rol.nombre, rol.etiqueta)}
                           disabled={eliminando[rol.nombre]}
                           title="Eliminar rol"
-                          className="rounded-lg p-1 text-gray-300 hover:bg-red-50 hover:text-red-500 disabled:opacity-60"
+                          className="rounded-lg p-1 text-gray-300 dark:text-gray-600 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400 disabled:opacity-60"
                         >
                           <Trash2 className="h-3 w-3" strokeWidth={1.75} />
                         </button>
                       )}
                     </div>
                     {errorGuardado[rol.nombre] && (
-                      <p className="max-w-[8rem] text-[10px] text-red-500">{errorGuardado[rol.nombre]}</p>
+                      <p className="max-w-[8rem] text-[10px] text-red-500 dark:text-red-400">{errorGuardado[rol.nombre]}</p>
                     )}
                   </div>
                 </th>
@@ -355,14 +355,14 @@ export default function RolesPermisosPage() {
                 <tr>
                   <td
                     colSpan={roles.length + 1}
-                    className="bg-gray-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-400"
+                    className="bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500"
                   >
                     {grupo.recurso}
                   </td>
                 </tr>
                 {grupo.permisos.map(p => (
-                  <tr key={p.id} className="border-b border-gray-50">
-                    <td className="sticky left-0 bg-white px-3 py-2.5 text-gray-700">{p.label}</td>
+                  <tr key={p.id} className="border-b border-gray-50 dark:border-gray-800">
+                    <td className="sticky left-0 bg-white dark:bg-gray-900 px-3 py-2.5 text-gray-700 dark:text-gray-300">{p.label}</td>
                     {roles.map(rol => (
                       <td key={rol.nombre} className="px-3 py-2.5 text-center">
                         <button
@@ -372,7 +372,7 @@ export default function RolesPermisosPage() {
                                       border transition-colors
                                       ${tienePermiso(rol.nombre, p.id)
                                         ? "border-teal-500 bg-teal-500"
-                                        : "border-gray-200 bg-white"}
+                                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"}
                                       ${puedeActualizar ? "cursor-pointer hover:border-teal-400" : "cursor-default"}`}
                         >
                           {tienePermiso(rol.nombre, p.id) && (
@@ -396,18 +396,18 @@ export default function RolesPermisosPage() {
       )}
 
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-white shadow-xl
+        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-white dark:bg-gray-900 shadow-xl
                     transition-transform duration-300 ease-in-out
                     ${panelCrearOpen ? "translate-x-0" : "translate-x-full"}`}
       >
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-5">
           <div>
-            <p className="text-base font-semibold text-gray-900">Crear rol</p>
-            <p className="text-xs text-gray-400">Nombre, etiqueta y permisos iniciales</p>
+            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">Crear rol</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Nombre, etiqueta y permisos iniciales</p>
           </div>
           <button
             onClick={() => setPanelCrearOpen(false)}
-            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           >
             <X className="h-4 w-4" />
           </button>
@@ -416,7 +416,7 @@ export default function RolesPermisosPage() {
         <form onSubmit={handleCrearSubmit} className="flex flex-1 flex-col overflow-y-auto">
           <div className="flex-1 space-y-5 px-6 py-6">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Nombre (slug, no editable después)
               </label>
               <input
@@ -424,50 +424,50 @@ export default function RolesPermisosPage() {
                 placeholder="Ej. recepcion"
                 value={formCrear.nombre}
                 onChange={e => setFormCrear(p => ({ ...p, nombre: e.target.value.toLowerCase() }))}
-                className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                            placeholder-gray-300 outline-none transition focus:bg-white focus:ring-2
+                className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                            placeholder-gray-300 dark:placeholder-gray-600 outline-none transition focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                             ${erroresCrear.nombre
-                              ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                              : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                              ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                              : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
               />
-              {erroresCrear.nombre && <p className="mt-1 text-xs text-red-500">{erroresCrear.nombre}</p>}
+              {erroresCrear.nombre && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{erroresCrear.nombre}</p>}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">Etiqueta</label>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Etiqueta</label>
               <input
                 type="text"
                 placeholder="Ej. Recepción"
                 value={formCrear.etiqueta}
                 onChange={e => setFormCrear(p => ({ ...p, etiqueta: e.target.value }))}
-                className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                            placeholder-gray-300 outline-none transition focus:bg-white focus:ring-2
+                className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                            placeholder-gray-300 dark:placeholder-gray-600 outline-none transition focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                             ${erroresCrear.etiqueta
-                              ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                              : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                              ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                              : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
               />
-              {erroresCrear.etiqueta && <p className="mt-1 text-xs text-red-500">{erroresCrear.etiqueta}</p>}
+              {erroresCrear.etiqueta && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{erroresCrear.etiqueta}</p>}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">Permisos</label>
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Permisos</label>
               <div className="space-y-3">
                 {GRUPOS.map(grupo => (
                   <div key={grupo.recurso}>
-                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-300">
+                    <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-300 dark:text-gray-600">
                       {grupo.recurso}
                     </p>
                     <div className="space-y-1">
                       {grupo.permisos.map(p => (
                         <label
                           key={p.id}
-                          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                          className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
                           <input
                             type="checkbox"
                             checked={formCrear.permisos.has(p.id)}
                             onChange={() => toggleNuevoPermiso(p.id)}
-                            className="h-3.5 w-3.5 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                            className="h-3.5 w-3.5 rounded border-gray-300 dark:border-gray-600 text-teal-600 focus:ring-teal-500"
                           />
                           {p.label}
                         </label>
@@ -479,11 +479,11 @@ export default function RolesPermisosPage() {
             </div>
 
             {crearError && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{crearError}</p>
+              <p className="rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs text-red-600 dark:text-red-400">{crearError}</p>
             )}
           </div>
 
-          <div className="border-t border-gray-100 px-6 py-4">
+          <div className="border-t border-gray-100 dark:border-gray-800 px-6 py-4">
             <button
               type="submit"
               disabled={crearSubmitting}

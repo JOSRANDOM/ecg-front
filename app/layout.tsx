@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
 import DeviceStatusBar from "./components/DeviceStatusBar";
+import { THEME_INIT_SCRIPT } from "./components/ThemeToggle";
 import { obtenerSesion } from "@/lib/session";
 
 const geistSans = Geist({
@@ -31,8 +32,12 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-white dark:bg-gray-950">
         {sesion && (
           <>
             <Navbar etiqueta={sesion.etiqueta} permisos={sesion.permisos} />
@@ -41,8 +46,8 @@ export default async function RootLayout({
         )}
         {children}
         {sesion && (
-          <footer className="mt-auto border-t border-gray-100 bg-white px-6 py-3">
-            <p className="text-xs text-gray-400 text-center">
+          <footer className="mt-auto border-t border-gray-100 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-950">
+            <p className="text-xs text-gray-400 text-center dark:text-gray-600">
               © {new Date().getFullYear()} Cardioflow E3. Todos los derechos reservados.
             </p>
           </footer>

@@ -47,13 +47,13 @@ function StepIcon({ index, status, activeColor = "blue" }: {
     if (activeColor === "yellow")
       return (
         <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full
-                         bg-yellow-400 text-[11px] font-bold text-white ring-4 ring-yellow-50">
+                         bg-yellow-400 text-[11px] font-bold text-white ring-4 ring-yellow-50 dark:ring-yellow-500/10">
           {index}
         </span>
       );
     return (
       <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full
-                       bg-blue-600 text-[11px] font-bold text-white ring-4 ring-blue-50">
+                       bg-blue-600 text-[11px] font-bold text-white ring-4 ring-blue-50 dark:ring-blue-500/10">
         <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2.5} />
       </span>
     );
@@ -61,7 +61,7 @@ function StepIcon({ index, status, activeColor = "blue" }: {
 
   return (
     <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full
-                     border border-gray-200 bg-white text-[11px] font-semibold text-gray-300">
+                     border border-gray-200 bg-white text-[11px] font-semibold text-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-600">
       {index}
     </span>
   );
@@ -85,11 +85,11 @@ function StepItem({
   action?:      { label: string; onClick: () => void };
 }) {
   const labelColor =
-    status === "done"                               ? "text-green-700" :
-    status === "active" && activeColor === "yellow" ? "text-yellow-600" :
-    status === "active"                             ? "text-blue-700"  :
-    status === "error"                              ? "text-red-500"   :
-                                                      "text-gray-400";
+    status === "done"                               ? "text-green-700 dark:text-green-400" :
+    status === "active" && activeColor === "yellow" ? "text-yellow-600 dark:text-amber-400" :
+    status === "active"                             ? "text-blue-700 dark:text-blue-400"  :
+    status === "error"                              ? "text-red-500 dark:text-red-400"   :
+                                                      "text-gray-400 dark:text-gray-500";
 
   return (
     <div className="flex items-start gap-3">
@@ -102,14 +102,14 @@ function StepItem({
           {action && (
             <button
               onClick={action.onClick}
-              className="text-xs text-blue-500 underline underline-offset-2 hover:text-blue-700"
+              className="text-xs text-blue-500 underline underline-offset-2 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               {action.label}
             </button>
           )}
         </div>
         {hint && (
-          <p className="mt-0.5 text-xs leading-relaxed text-gray-400">{hint}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-gray-400 dark:text-gray-500">{hint}</p>
         )}
       </div>
     </div>
@@ -123,20 +123,20 @@ function DeviceList({ devices }: { devices: DeviceInfo[] }) {
     <div className="mt-4 space-y-2">
       {devices.map((d, i) => (
         <div key={i} className="flex items-center gap-3 rounded-xl border border-green-100
-                                bg-green-50 px-4 py-3">
+                                bg-green-50 px-4 py-3 dark:border-green-500/20 dark:bg-green-500/10">
           <Usb className="h-4 w-4 flex-shrink-0 text-green-500" strokeWidth={1.75} />
           <div className="min-w-0">
             {d.device_name && (
-              <p className="truncate text-xs font-medium text-gray-800">{d.device_name}</p>
+              <p className="truncate text-xs font-medium text-gray-800 dark:text-gray-200">{d.device_name}</p>
             )}
             {d.port && (
-              <p className="text-[11px] text-gray-400">
-                Puerto: <span className="font-mono font-semibold text-gray-600">{d.port}</span>
+              <p className="text-[11px] text-gray-400 dark:text-gray-500">
+                Puerto: <span className="font-mono font-semibold text-gray-600 dark:text-gray-300">{d.port}</span>
               </p>
             )}
           </div>
           <span className="ml-auto flex-shrink-0 rounded-full bg-green-100 px-2 py-0.5
-                           text-[10px] font-semibold text-green-700">
+                           text-[10px] font-semibold text-green-700 dark:bg-green-500/10 dark:text-green-400">
             Conectado
           </span>
         </div>
@@ -268,20 +268,20 @@ export default function DeviceCard() {
   };
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white shadow-sm">
+    <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
 
       {/* Device header */}
-      <div className="flex items-center gap-4 border-b border-gray-100 px-6 py-5">
+      <div className="flex items-center gap-4 border-b border-gray-100 px-6 py-5 dark:border-gray-800">
         <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center
-                        rounded-xl bg-blue-50">
-          <Cpu className="h-5 w-5 text-blue-600" strokeWidth={1.75} />
+                        rounded-xl bg-blue-50 dark:bg-blue-500/10">
+          <Cpu className="h-5 w-5 text-blue-600 dark:text-blue-400" strokeWidth={1.75} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900">Electrocardiógrafo</p>
-          <p className="text-xs text-gray-400">CONTEC E3</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Electrocardiógrafo</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">CONTEC E3</p>
         </div>
         <span className="flex-shrink-0 rounded-full border border-gray-100 bg-gray-50
-                         px-2.5 py-1 text-[11px] font-medium text-gray-500">
+                         px-2.5 py-1 text-[11px] font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-500">
           USB / COM
         </span>
       </div>
@@ -319,7 +319,7 @@ export default function DeviceCard() {
       </div>
 
       {/* Footer / acción */}
-      <div className="border-t border-gray-100 px-6 py-4">
+      <div className="border-t border-gray-100 px-6 py-4 dark:border-gray-800">
         {!started ? (
           <button
             onClick={startFlow}
@@ -333,13 +333,13 @@ export default function DeviceCard() {
             onClick={reset}
             className="flex w-full items-center justify-center gap-2 rounded-xl
                        bg-gray-50 py-2.5 text-sm font-medium text-gray-600
-                       transition-colors hover:bg-gray-100"
+                       transition-colors hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             <RotateCcw className="h-3.5 w-3.5" strokeWidth={2} />
             Reiniciar
           </button>
         ) : (
-          <p className="text-center text-xs text-gray-400">
+          <p className="text-center text-xs text-gray-400 dark:text-gray-500">
             Proceso en curso — no cierres esta ventana
           </p>
         )}

@@ -35,7 +35,7 @@ export default function DeviceStatusBadge() {
 
   return (
     <span className="flex items-center gap-1.5 rounded-full border border-gray-100 bg-gray-50
-                     px-2.5 py-1 text-xs font-medium text-gray-600">
+                     px-2.5 py-1 text-xs font-medium text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
       <span className={`h-2 w-2 rounded-full ${dot} ${status === "agent_only" ? "animate-pulse" : ""}`} />
       {label}
     </span>

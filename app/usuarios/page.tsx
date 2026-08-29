@@ -65,12 +65,12 @@ const ICONOS_ROL: Record<string, React.ElementType> = {
 };
 
 const COLORES_ROL: Record<string, { color: string; bg: string; badge: string }> = {
-  webmaster: { color: "text-blue-600", bg: "bg-blue-50", badge: "bg-blue-50 text-blue-700" },
-  administracion: { color: "text-indigo-600", bg: "bg-indigo-50", badge: "bg-indigo-50 text-indigo-700" },
-  medico: { color: "text-violet-600", bg: "bg-violet-50", badge: "bg-violet-50 text-violet-700" },
-  tecnico: { color: "text-teal-600", bg: "bg-teal-50", badge: "bg-teal-50 text-teal-700" },
+  webmaster: { color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", badge: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" },
+  administracion: { color: "text-indigo-600 dark:text-indigo-400", bg: "bg-indigo-50 dark:bg-indigo-500/10", badge: "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" },
+  medico: { color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-500/10", badge: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400" },
+  tecnico: { color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-500/10", badge: "bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400" },
 };
-const COLOR_GENERICO = { color: "text-gray-600", bg: "bg-gray-100", badge: "bg-gray-100 text-gray-700" };
+const COLOR_GENERICO = { color: "text-gray-600 dark:text-gray-400", bg: "bg-gray-100 dark:bg-gray-800", badge: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400" };
 
 const DESCRIPCIONES_ROL: Record<string, string> = {
   webmaster: "Acceso total a la plataforma.",
@@ -98,11 +98,11 @@ function iniciales(nombre: string) {
 }
 
 const AVATAR_COLORS = [
-  "bg-blue-100 text-blue-700",
-  "bg-violet-100 text-violet-700",
-  "bg-teal-100 text-teal-700",
-  "bg-rose-100 text-rose-700",
-  "bg-amber-100 text-amber-700",
+  "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
+  "bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400",
+  "bg-teal-100 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400",
+  "bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400",
+  "bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400",
 ];
 
 function avatarColor(id: string) {
@@ -352,13 +352,13 @@ export default function UsuariosPage() {
   }
 
   return (
-    <main className="flex flex-1 flex-col bg-white">
+    <main className="flex flex-1 flex-col bg-white dark:bg-gray-900">
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-5">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-gray-900">Usuarios</h1>
-          <p className="mt-0.5 text-xs text-gray-400">
+          <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Usuarios</h1>
+          <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
             {loading ? "Cargando…" : `${usuarios.length} usuarios registrados`}
           </p>
         </div>
@@ -367,8 +367,8 @@ export default function UsuariosPage() {
             onClick={cargar}
             disabled={loading}
             title="Recargar"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200
-                       text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 dark:border-gray-700
+                       text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300 disabled:opacity-50"
           >
             <RefreshCcw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} strokeWidth={1.75} />
           </button>
@@ -388,15 +388,15 @@ export default function UsuariosPage() {
       {/* Búsqueda */}
       <div className="px-6 py-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" strokeWidth={1.75} />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300 dark:text-gray-600" strokeWidth={1.75} />
           <input
             type="text"
             placeholder="Buscar por nombre, usuario o correo…"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-4
-                       text-sm text-gray-800 placeholder-gray-300 outline-none
-                       transition focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-50"
+            className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2.5 pl-9 pr-4
+                       text-sm text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 outline-none
+                       transition focus:border-teal-300 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-teal-50 dark:focus:ring-teal-500/20"
           />
         </div>
       </div>
@@ -404,18 +404,18 @@ export default function UsuariosPage() {
       {/* Lista */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         {loadError && (
-          <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{loadError}</p>
+          <p className="mb-4 rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs text-red-600 dark:text-red-400">{loadError}</p>
         )}
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <Loader2 className="mb-3 h-6 w-6 animate-spin text-gray-300" />
-            <p className="text-sm text-gray-400">Cargando usuarios…</p>
+            <Loader2 className="mb-3 h-6 w-6 animate-spin text-gray-300 dark:text-gray-600" />
+            <p className="text-sm text-gray-400 dark:text-gray-500">Cargando usuarios…</p>
           </div>
         ) : filtrados.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <UserCog className="mb-3 h-8 w-8 text-gray-200" strokeWidth={1.5} />
-            <p className="text-sm text-gray-400">
+            <UserCog className="mb-3 h-8 w-8 text-gray-200 dark:text-gray-600" strokeWidth={1.5} />
+            <p className="text-sm text-gray-400 dark:text-gray-500">
               {query ? (
                 <>Sin resultados para <span className="font-medium">&quot;{query}&quot;</span></>
               ) : (
@@ -424,7 +424,7 @@ export default function UsuariosPage() {
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-50">
+          <ul className="divide-y divide-gray-50 dark:divide-gray-800">
             {filtrados.map(u => {
               const pc = perfilConfig(roles, u.rol);
               const Icon = pc.icon;
@@ -432,7 +432,7 @@ export default function UsuariosPage() {
                 <li
                   key={u.id}
                   onClick={() => puedeActualizar && abrirEdicion(u)}
-                  className={`flex items-center gap-4 rounded-xl px-2 py-3.5 hover:bg-gray-50
+                  className={`flex items-center gap-4 rounded-xl px-2 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800
                              ${puedeActualizar ? "cursor-pointer" : ""}`}
                 >
                   {/* Avatar */}
@@ -444,15 +444,15 @@ export default function UsuariosPage() {
                   {/* Info */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="truncate text-sm font-medium text-gray-900">{u.nombre_completo}</p>
+                      <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{u.nombre_completo}</p>
                       {!u.activo && (
-                        <span className="flex-shrink-0 rounded-full bg-gray-100 px-2 py-0.5
-                                         text-[10px] font-medium text-gray-400">
+                        <span className="flex-shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5
+                                         text-[10px] font-medium text-gray-400 dark:text-gray-500">
                           Inactivo
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
+                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-gray-400 dark:text-gray-500">
                       <span>@{u.username}</span>
                       <span>·</span>
                       <span>{u.email}</span>
@@ -469,16 +469,16 @@ export default function UsuariosPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); desactivar(u.id, u.nombre_completo); }}
                       title="Desactivar"
-                      className="flex-shrink-0 rounded-lg p-2 text-gray-300 transition-colors
-                                 hover:bg-red-50 hover:text-red-500"
+                      className="flex-shrink-0 rounded-lg p-2 text-gray-300 dark:text-gray-600 transition-colors
+                                 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                     >
                       <Trash2 className="h-4 w-4" strokeWidth={1.75} />
                     </button>
                   )}
                   {puedeActualizar ? (
-                    <Pencil className="h-3.5 w-3.5 flex-shrink-0 text-gray-200" strokeWidth={1.75} />
+                    <Pencil className="h-3.5 w-3.5 flex-shrink-0 text-gray-200 dark:text-gray-600" strokeWidth={1.75} />
                   ) : (
-                    <ChevronRight className="h-4 w-4 flex-shrink-0 text-gray-300" strokeWidth={1.75} />
+                    <ChevronRight className="h-4 w-4 flex-shrink-0 text-gray-300 dark:text-gray-600" strokeWidth={1.75} />
                   )}
                 </li>
               );
@@ -494,19 +494,19 @@ export default function UsuariosPage() {
       )}
 
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-white shadow-xl
+        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-white dark:bg-gray-900 shadow-xl
                     transition-transform duration-300 ease-in-out
                     ${panelOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* Panel header */}
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-5">
           <div>
-            <p className="text-base font-semibold text-gray-900">Crear usuario</p>
-            <p className="text-xs text-gray-400">Completa los datos y selecciona un perfil</p>
+            <p className="text-base font-semibold text-gray-900 dark:text-gray-100">Crear usuario</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Completa los datos y selecciona un perfil</p>
           </div>
           <button
             onClick={closePanel}
-            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           >
             <X className="h-4 w-4" />
           </button>
@@ -518,7 +518,7 @@ export default function UsuariosPage() {
 
             {/* Usuario (login) */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Usuario (login)
               </label>
               <input
@@ -526,21 +526,21 @@ export default function UsuariosPage() {
                 placeholder="Ej. jperez"
                 value={form.username}
                 onChange={e => setForm(p => ({ ...p, username: e.target.value }))}
-                className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                            placeholder-gray-300 outline-none transition
-                            focus:bg-white focus:ring-2
+                className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                            placeholder-gray-300 dark:placeholder-gray-600 outline-none transition
+                            focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                             ${errors.username
-                              ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                              : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                              ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                              : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
               />
               {errors.username && (
-                <p className="mt-1 text-xs text-red-500">{errors.username}</p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.username}</p>
               )}
             </div>
 
             {/* Nombre */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Nombre completo
               </label>
               <input
@@ -548,21 +548,21 @@ export default function UsuariosPage() {
                 placeholder="Ej. Dr. Juan Pérez"
                 value={form.nombre_completo}
                 onChange={e => setForm(p => ({ ...p, nombre_completo: e.target.value }))}
-                className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                            placeholder-gray-300 outline-none transition
-                            focus:bg-white focus:ring-2
+                className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                            placeholder-gray-300 dark:placeholder-gray-600 outline-none transition
+                            focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                             ${errors.nombre_completo
-                              ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                              : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                              ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                              : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
               />
               {errors.nombre_completo && (
-                <p className="mt-1 text-xs text-red-500">{errors.nombre_completo}</p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.nombre_completo}</p>
               )}
             </div>
 
             {/* Email */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Correo electrónico
               </label>
               <input
@@ -570,21 +570,21 @@ export default function UsuariosPage() {
                 placeholder="usuario@cardioflow.co"
                 value={form.email}
                 onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                            placeholder-gray-300 outline-none transition
-                            focus:bg-white focus:ring-2
+                className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                            placeholder-gray-300 dark:placeholder-gray-600 outline-none transition
+                            focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                             ${errors.email
-                              ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                              : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                              ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                              : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
               />
               {errors.email && (
-                <p className="mt-1 text-xs text-red-500">{errors.email}</p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.email}</p>
               )}
             </div>
 
             {/* Contraseña temporal */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Contraseña temporal
               </label>
               <div className="flex gap-2">
@@ -593,33 +593,33 @@ export default function UsuariosPage() {
                   placeholder="Mínimo 8 caracteres"
                   value={form.password}
                   onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                  className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                              placeholder-gray-300 outline-none transition
-                              focus:bg-white focus:ring-2
+                  className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                              placeholder-gray-300 dark:placeholder-gray-600 outline-none transition
+                              focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                               ${errors.password
-                                ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                                : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                                ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                                : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
                 />
                 <button
                   type="button"
                   onClick={() => setForm(p => ({ ...p, password: generarPassword() }))}
-                  className="flex-shrink-0 rounded-xl border border-gray-200 px-3 text-xs font-medium
-                             text-gray-500 transition-colors hover:bg-gray-50"
+                  className="flex-shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 px-3 text-xs font-medium
+                             text-gray-500 dark:text-gray-500 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Generar
                 </button>
               </div>
-              <p className="mt-1 text-[11px] text-gray-400">
+              <p className="mt-1 text-[11px] text-gray-400 dark:text-gray-500">
                 Compártela con la persona por un canal seguro — no queda guardada en ningún lado.
               </p>
               {errors.password && (
-                <p className="mt-1 text-xs text-red-500">{errors.password}</p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.password}</p>
               )}
             </div>
 
             {/* Perfil */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-gray-700">
+              <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                 Perfil
               </label>
               <div className="space-y-2">
@@ -634,21 +634,21 @@ export default function UsuariosPage() {
                       className={`flex w-full items-start gap-3 rounded-xl border-2 p-4 text-left
                                   transition-all
                                   ${selected
-                                    ? "border-teal-400 bg-teal-50/60"
-                                    : "border-gray-100 bg-gray-50 hover:border-gray-200"}`}
+                                    ? "border-teal-400 dark:border-teal-500 bg-teal-50/60 dark:bg-teal-500/10"
+                                    : "border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700"}`}
                     >
                       <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center
-                                       rounded-lg ${selected ? bg : "bg-white"}`}>
-                        <Icon className={`h-4 w-4 ${selected ? color : "text-gray-400"}`} strokeWidth={1.75} />
+                                       rounded-lg ${selected ? bg : "bg-white dark:bg-gray-900"}`}>
+                        <Icon className={`h-4 w-4 ${selected ? color : "text-gray-400 dark:text-gray-500"}`} strokeWidth={1.75} />
                       </div>
                       <div>
-                        <p className={`text-sm font-medium ${selected ? "text-gray-900" : "text-gray-600"}`}>
+                        <p className={`text-sm font-medium ${selected ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}`}>
                           {label}
                         </p>
-                        <p className="mt-0.5 text-xs text-gray-400 leading-relaxed">{descripcion}</p>
+                        <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500 leading-relaxed">{descripcion}</p>
                       </div>
                       <div className={`ml-auto mt-0.5 h-4 w-4 flex-shrink-0 rounded-full border-2 transition-colors
-                                       ${selected ? "border-teal-500 bg-teal-500" : "border-gray-200 bg-white"}`}>
+                                       ${selected ? "border-teal-500 bg-teal-500" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"}`}>
                         {selected && (
                           <svg viewBox="0 0 8 8" className="h-full w-full" fill="white">
                             <polyline points="1.5,4 3.5,6 6.5,2" strokeWidth={1.5} stroke="white" fill="none" />
@@ -660,17 +660,17 @@ export default function UsuariosPage() {
                 })}
               </div>
               {errors.rol && (
-                <p className="mt-1.5 text-xs text-red-500">{errors.rol}</p>
+                <p className="mt-1.5 text-xs text-red-500 dark:text-red-400">{errors.rol}</p>
               )}
             </div>
 
             {submitError && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{submitError}</p>
+              <p className="rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs text-red-600 dark:text-red-400">{submitError}</p>
             )}
           </div>
 
           {/* Footer del panel */}
-          <div className="border-t border-gray-100 px-6 py-4">
+          <div className="border-t border-gray-100 dark:border-gray-800 px-6 py-4">
             <button
               type="submit"
               disabled={submitting}
@@ -690,21 +690,21 @@ export default function UsuariosPage() {
       )}
 
       <aside
-        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-white shadow-xl
+        className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col bg-white dark:bg-gray-900 shadow-xl
                     transition-transform duration-300 ease-in-out
                     ${editUsuario ? "translate-x-0" : "translate-x-full"}`}
       >
         {editUsuario && (
           <>
             {/* Panel header */}
-            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-5">
               <div>
-                <p className="text-base font-semibold text-gray-900">Editar usuario</p>
-                <p className="text-xs text-gray-400">@{editUsuario.username}</p>
+                <p className="text-base font-semibold text-gray-900 dark:text-gray-100">Editar usuario</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">@{editUsuario.username}</p>
               </div>
               <button
                 onClick={cerrarEdicion}
-                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                className="rounded-lg p-1.5 text-gray-400 dark:text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -716,52 +716,52 @@ export default function UsuariosPage() {
 
                 {/* Nombre */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                     Nombre completo
                   </label>
                   <input
                     type="text"
                     value={editForm.nombre_completo}
                     onChange={e => setEditForm(p => ({ ...p, nombre_completo: e.target.value }))}
-                    className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                                outline-none transition focus:bg-white focus:ring-2
+                    className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                                outline-none transition focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                                 ${editErrors.nombre_completo
-                                  ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                                  : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                                  ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                                  : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
                   />
                   {editErrors.nombre_completo && (
-                    <p className="mt-1 text-xs text-red-500">{editErrors.nombre_completo}</p>
+                    <p className="mt-1 text-xs text-red-500 dark:text-red-400">{editErrors.nombre_completo}</p>
                   )}
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                     Correo electrónico
                   </label>
                   <input
                     type="email"
                     value={editForm.email}
                     onChange={e => setEditForm(p => ({ ...p, email: e.target.value }))}
-                    className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
-                                outline-none transition focus:bg-white focus:ring-2
+                    className={`w-full rounded-xl border bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100
+                                outline-none transition focus:bg-white dark:focus:bg-gray-900 focus:ring-2
                                 ${editErrors.email
-                                  ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                                  : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                                  ? "border-red-300 dark:border-red-500/50 focus:border-red-300 dark:focus:border-red-500/50 focus:ring-red-50 dark:focus:ring-red-500/20"
+                                  : "border-gray-200 dark:border-gray-700 focus:border-teal-300 focus:ring-teal-50 dark:focus:ring-teal-500/20"}`}
                   />
                   {editErrors.email && (
-                    <p className="mt-1 text-xs text-red-500">{editErrors.email}</p>
+                    <p className="mt-1 text-xs text-red-500 dark:text-red-400">{editErrors.email}</p>
                   )}
                 </div>
 
                 {/* Rol — acción separada a propósito, no se cambia por accidente */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                  <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                     Perfil
                   </label>
 
                   {!editMostrarRol ? (
-                    <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3">
+                    <div className="flex items-center justify-between rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 p-3">
                       {(() => {
                         const pc = perfilConfig(roles, editRolNuevo ?? editUsuario.rol);
                         const Icon = pc.icon;
@@ -776,7 +776,7 @@ export default function UsuariosPage() {
                       <button
                         type="button"
                         onClick={() => setEditMostrarRol(true)}
-                        className="text-xs font-medium text-teal-600 hover:text-teal-700"
+                        className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300"
                       >
                         Cambiar rol
                       </button>
@@ -794,21 +794,21 @@ export default function UsuariosPage() {
                             className={`flex w-full items-start gap-3 rounded-xl border-2 p-4 text-left
                                         transition-all
                                         ${selected
-                                          ? "border-teal-400 bg-teal-50/60"
-                                          : "border-gray-100 bg-gray-50 hover:border-gray-200"}`}
+                                          ? "border-teal-400 dark:border-teal-500 bg-teal-50/60 dark:bg-teal-500/10"
+                                          : "border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700"}`}
                           >
                             <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center
-                                             rounded-lg ${selected ? bg : "bg-white"}`}>
-                              <Icon className={`h-4 w-4 ${selected ? color : "text-gray-400"}`} strokeWidth={1.75} />
+                                             rounded-lg ${selected ? bg : "bg-white dark:bg-gray-900"}`}>
+                              <Icon className={`h-4 w-4 ${selected ? color : "text-gray-400 dark:text-gray-500"}`} strokeWidth={1.75} />
                             </div>
                             <div>
-                              <p className={`text-sm font-medium ${selected ? "text-gray-900" : "text-gray-600"}`}>
+                              <p className={`text-sm font-medium ${selected ? "text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}`}>
                                 {label}
                               </p>
-                              <p className="mt-0.5 text-xs text-gray-400 leading-relaxed">{descripcion}</p>
+                              <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500 leading-relaxed">{descripcion}</p>
                             </div>
                             <div className={`ml-auto mt-0.5 h-4 w-4 flex-shrink-0 rounded-full border-2 transition-colors
-                                             ${selected ? "border-teal-500 bg-teal-500" : "border-gray-200 bg-white"}`}>
+                                             ${selected ? "border-teal-500 bg-teal-500" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"}`}>
                               {selected && (
                                 <svg viewBox="0 0 8 8" className="h-full w-full" fill="white">
                                   <polyline points="1.5,4 3.5,6 6.5,2" strokeWidth={1.5} stroke="white" fill="none" />
@@ -819,7 +819,7 @@ export default function UsuariosPage() {
                         );
                       })}
                       {editRolNuevo && editRolNuevo !== editUsuario.rol && (
-                        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                        <p className="rounded-lg bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
                           Vas a cambiar el rol de <strong>{perfilConfig(roles, editUsuario.rol).label}</strong> a{" "}
                           <strong>{perfilConfig(roles, editRolNuevo).label}</strong>.
                         </p>
@@ -829,22 +829,22 @@ export default function UsuariosPage() {
                 </div>
 
                 {editSubmitError && (
-                  <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{editSubmitError}</p>
+                  <p className="rounded-lg bg-red-50 dark:bg-red-500/10 px-3 py-2 text-xs text-red-600 dark:text-red-400">{editSubmitError}</p>
                 )}
 
                 {/* Restablecer contraseña — acción independiente, endpoint aparte */}
-                <div className="border-t border-gray-100 pt-5">
+                <div className="border-t border-gray-100 dark:border-gray-800 pt-5">
                   {!editMostrarPassword ? (
                     <button
                       type="button"
                       onClick={() => setEditMostrarPassword(true)}
-                      className="text-xs font-medium text-gray-500 hover:text-gray-800"
+                      className="text-xs font-medium text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300"
                     >
                       Restablecer contraseña…
                     </button>
                   ) : (
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                      <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">
                         Nueva contraseña temporal
                       </label>
                       <div className="flex gap-2">
@@ -853,24 +853,24 @@ export default function UsuariosPage() {
                           placeholder="Mínimo 8 caracteres"
                           value={editPasswordNueva}
                           onChange={e => { setEditPasswordNueva(e.target.value); setEditPasswordExito(false); }}
-                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm
-                                     text-gray-800 placeholder-gray-300 outline-none transition
-                                     focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-50"
+                          className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm
+                                     text-gray-800 dark:text-gray-100 placeholder-gray-300 dark:placeholder-gray-600 outline-none transition
+                                     focus:border-teal-300 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-teal-50 dark:focus:ring-teal-500/20"
                         />
                         <button
                           type="button"
                           onClick={() => { setEditPasswordNueva(generarPassword()); setEditPasswordExito(false); }}
-                          className="flex-shrink-0 rounded-xl border border-gray-200 px-3 text-xs font-medium
-                                     text-gray-500 transition-colors hover:bg-gray-50"
+                          className="flex-shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 px-3 text-xs font-medium
+                                     text-gray-500 dark:text-gray-500 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                         >
                           Generar
                         </button>
                       </div>
                       {editPasswordError && (
-                        <p className="mt-1 text-xs text-red-500">{editPasswordError}</p>
+                        <p className="mt-1 text-xs text-red-500 dark:text-red-400">{editPasswordError}</p>
                       )}
                       {editPasswordExito && (
-                        <p className="mt-1 text-xs text-green-600">
+                        <p className="mt-1 text-xs text-green-600 dark:text-green-400">
                           Contraseña actualizada — compártela con {editUsuario.nombre_completo} por un canal seguro.
                         </p>
                       )}
@@ -878,8 +878,8 @@ export default function UsuariosPage() {
                         type="button"
                         onClick={handleResetPassword}
                         disabled={editPasswordSubmitting}
-                        className="mt-2 w-full rounded-xl border border-gray-200 py-2 text-sm font-medium
-                                   text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+                        className="mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-700 py-2 text-sm font-medium
+                                   text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60"
                       >
                         {editPasswordSubmitting ? "Restableciendo…" : "Restablecer contraseña"}
                       </button>
@@ -889,7 +889,7 @@ export default function UsuariosPage() {
               </div>
 
               {/* Footer del panel */}
-              <div className="border-t border-gray-100 px-6 py-4">
+              <div className="border-t border-gray-100 dark:border-gray-800 px-6 py-4">
                 <button
                   type="submit"
                   disabled={editSubmitting}

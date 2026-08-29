@@ -163,18 +163,18 @@ export default function MiUsuarioPage() {
 
   if (loading) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center bg-white">
-        <Loader2 className="mb-3 h-6 w-6 animate-spin text-gray-300" />
-        <p className="text-sm text-gray-400">Cargando tu perfil…</p>
+      <main className="flex flex-1 flex-col items-center justify-center bg-white dark:bg-gray-900">
+        <Loader2 className="mb-3 h-6 w-6 animate-spin text-gray-300 dark:text-gray-600" />
+        <p className="text-sm text-gray-400 dark:text-gray-500">Cargando tu perfil…</p>
       </main>
     );
   }
 
   if (loadError || !usuario) {
     return (
-      <main className="flex flex-1 flex-col items-center justify-center bg-white px-6 text-center">
-        <User className="mb-3 h-8 w-8 text-gray-200" strokeWidth={1.5} />
-        <p className="text-sm text-gray-400">{loadError || "No se pudo cargar tu perfil"}</p>
+      <main className="flex flex-1 flex-col items-center justify-center bg-white px-6 text-center dark:bg-gray-900">
+        <User className="mb-3 h-8 w-8 text-gray-200 dark:text-gray-700" strokeWidth={1.5} />
+        <p className="text-sm text-gray-400 dark:text-gray-500">{loadError || "No se pudo cargar tu perfil"}</p>
       </main>
     );
   }
@@ -182,71 +182,73 @@ export default function MiUsuarioPage() {
   const Icon = ICONOS_ROL[usuario.rol] ?? ICONO_GENERICO;
 
   return (
-    <main className="flex flex-1 flex-col bg-white">
-      <div className="border-b border-gray-100 px-6 py-5">
-        <h1 className="text-xl font-bold tracking-tight text-gray-900">Mi usuario</h1>
-        <p className="mt-0.5 text-xs text-gray-400">Tus datos y tu contraseña — solo tú puedes verlos y cambiarlos</p>
+    <main className="flex flex-1 flex-col bg-white dark:bg-gray-900">
+      <div className="border-b border-gray-100 px-6 py-5 dark:border-gray-800">
+        <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Mi usuario</h1>
+        <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">Tus datos y tu contraseña — solo tú puedes verlos y cambiarlos</p>
       </div>
 
       <div className="mx-auto w-full max-w-md flex-1 space-y-8 px-6 py-8">
 
         {/* Identidad — solo lectura */}
-        <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+        <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800">
           <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full
-                          bg-teal-100 text-sm font-bold text-teal-700">
+                          bg-teal-100 text-sm font-bold text-teal-700 dark:bg-teal-500/10 dark:text-teal-400">
             {iniciales(usuario.nombre_completo)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-gray-900">{usuario.nombre_completo}</p>
-            <p className="text-xs text-gray-400">@{usuario.username}</p>
+            <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{usuario.nombre_completo}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">@{usuario.username}</p>
           </div>
           <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full bg-gray-100
-                            px-2.5 py-1 text-xs font-medium text-gray-700">
+                            px-2.5 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
             <Icon className="h-3 w-3" strokeWidth={2} />
             {etiquetaRol}
           </span>
         </div>
-        <p className="-mt-6 text-[11px] text-gray-400">
+        <p className="-mt-6 text-[11px] text-gray-400 dark:text-gray-500">
           El usuario y el rol los define administración — no se editan desde aquí.
         </p>
 
         {/* Datos editables */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">Nombre completo</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Nombre completo</label>
             <input
               type="text"
               value={form.nombre_completo}
               onChange={e => setForm(p => ({ ...p, nombre_completo: e.target.value }))}
               className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
                           outline-none transition focus:bg-white focus:ring-2
+                          dark:bg-gray-800 dark:text-gray-100 dark:focus:bg-gray-900
                           ${errors.nombre_completo
-                            ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                            : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                            ? "border-red-300 focus:border-red-300 focus:ring-red-50 dark:border-red-500/40 dark:focus:border-red-500/40 dark:focus:ring-red-500/10"
+                            : "border-gray-200 focus:border-teal-300 focus:ring-teal-50 dark:border-gray-700 dark:focus:border-teal-500/40 dark:focus:ring-teal-500/10"}`}
             />
-            {errors.nombre_completo && <p className="mt-1 text-xs text-red-500">{errors.nombre_completo}</p>}
+            {errors.nombre_completo && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.nombre_completo}</p>}
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">Correo electrónico</label>
+            <label className="mb-1.5 block text-xs font-medium text-gray-700 dark:text-gray-300">Correo electrónico</label>
             <input
               type="email"
               value={form.email}
               onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
               className={`w-full rounded-xl border bg-gray-50 px-4 py-2.5 text-sm text-gray-800
                           outline-none transition focus:bg-white focus:ring-2
+                          dark:bg-gray-800 dark:text-gray-100 dark:focus:bg-gray-900
                           ${errors.email
-                            ? "border-red-300 focus:border-red-300 focus:ring-red-50"
-                            : "border-gray-200 focus:border-teal-300 focus:ring-teal-50"}`}
+                            ? "border-red-300 focus:border-red-300 focus:ring-red-50 dark:border-red-500/40 dark:focus:border-red-500/40 dark:focus:ring-red-500/10"
+                            : "border-gray-200 focus:border-teal-300 focus:ring-teal-50 dark:border-gray-700 dark:focus:border-teal-500/40 dark:focus:ring-teal-500/10"}`}
             />
-            {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+            {errors.email && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{errors.email}</p>}
           </div>
 
           {submitError && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{submitError}</p>
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">{submitError}</p>
           )}
           {submitExito && (
-            <p className="rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">Cambios guardados.</p>
+            <p className="rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700 dark:bg-green-500/10 dark:text-green-400">Cambios guardados.</p>
           )}
 
           <button
@@ -260,10 +262,10 @@ export default function MiUsuarioPage() {
         </form>
 
         {/* Cambiar contraseña */}
-        <div className="space-y-3 border-t border-gray-100 pt-6">
+        <div className="space-y-3 border-t border-gray-100 pt-6 dark:border-gray-800">
           <div>
-            <p className="text-sm font-medium text-gray-900">Cambiar mi contraseña</p>
-            <p className="text-xs text-gray-400">Nadie más puede hacer esto por ti desde aquí.</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Cambiar mi contraseña</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Nadie más puede hacer esto por ti desde aquí.</p>
           </div>
           <div className="flex gap-2">
             <input
@@ -273,20 +275,23 @@ export default function MiUsuarioPage() {
               onChange={e => { setPasswordNueva(e.target.value); setPasswordExito(false); }}
               className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm
                          text-gray-800 placeholder-gray-300 outline-none transition
-                         focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-50"
+                         focus:border-teal-300 focus:bg-white focus:ring-2 focus:ring-teal-50
+                         dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-600
+                         dark:focus:border-teal-500/40 dark:focus:bg-gray-900 dark:focus:ring-teal-500/10"
             />
             <button
               type="button"
               onClick={() => { setPasswordNueva(generarPassword()); setPasswordExito(false); }}
               className="flex-shrink-0 rounded-xl border border-gray-200 px-3 text-xs font-medium
-                         text-gray-500 transition-colors hover:bg-gray-50"
+                         text-gray-500 transition-colors hover:bg-gray-50
+                         dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
             >
               Generar
             </button>
           </div>
-          {passwordError && <p className="text-xs text-red-500">{passwordError}</p>}
+          {passwordError && <p className="text-xs text-red-500 dark:text-red-400">{passwordError}</p>}
           {passwordExito && (
-            <p className="text-xs text-green-600">
+            <p className="text-xs text-green-600 dark:text-green-400">
               Contraseña actualizada. La próxima vez que inicies sesión, usa la nueva.
             </p>
           )}
@@ -295,7 +300,8 @@ export default function MiUsuarioPage() {
             onClick={handleResetPassword}
             disabled={passwordSubmitting}
             className="w-full rounded-xl border border-gray-200 py-2.5 text-sm font-medium
-                       text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60"
+                       text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-60
+                       dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
             {passwordSubmitting ? "Actualizando…" : "Actualizar contraseña"}
           </button>

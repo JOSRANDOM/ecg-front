@@ -34,10 +34,10 @@ export default function DeviceStatusBar() {
   const { dot, label } = CONFIG[status];
 
   return (
-    <div className="w-full border-b border-gray-100 bg-white px-6 py-1.5">
+    <div className="w-full border-b border-gray-100 bg-white px-6 py-1.5 dark:border-gray-800 dark:bg-gray-950">
       <div className="flex items-center gap-2">
         <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${dot} ${status === "agent_only" ? "animate-pulse" : ""}`} />
-        <span className="text-[11px] text-gray-400">{label}</span>
+        <span className="text-[11px] text-gray-400 dark:text-gray-500">{label}</span>
       </div>
     </div>
   );
